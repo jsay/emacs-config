@@ -5,13 +5,15 @@
 #+LaTeX_CLASS: ManueLisp
 #+STARTUP:     hideblocks
 #+DRAWERS:     PROPERTIES BABEL
-:BABEL:    
+:BABEL:
 #+PROPERTY: header-args :tangle "init.el" :results silent
 :END:      
 
 * TODO items							   :noexport:
 
   - Group and harmonize bibliography stuff
+  - Export README as md file to Github
+  - see to create bercykeupon-theme.el in .emacs.d/themes/
 
 * README							   :noexport:
 ** Presentation
@@ -39,4 +41,89 @@
  
   (load with =M-x list-packages=, choose with =i= and then =x=.
 
-  cyber-punk theme / org / magit / pager / ess / auctex
+  cyber-punk theme (melpa) / org (org) / magit (elpa) / pager
+  (marmalade) / ess (melpa) / auctex (gnu)
+* GENERAL
+** Encoding
+
+  Force all in utf-8.
+
+#+begin_src emacs-lisp
+(prefer-coding-system 'utf-8)
+(modify-coding-system-alist 'file "\\.tex\\'" 'utf-8)
+(modify-coding-system-alist 'file "\\.org\\'" 'utf-8)
+(setq org-export-latex-coding-system 'utf-8)
+(setq org-export-coding-system 'utf-8)
+#+end_src
+
+  To use circumflex accent
+
+#+begin_src emacs-lisp
+(load-library "iso-transl")
+#+end_src
+
+** Apparency
+*** Theme
+
+    Some manual modifications in "/.emacs.d/themes/cyberpunk-theme.el"
+
+#+begin_src emacs-lisp
+(add-to-list 'custom-theme-load-path "/home/jsay/.emacs.d/themes/")
+(load-theme 'cyberpunk t)
+#+end_src
+
+*** Font size
+
+#+begin_src emacs-lisp
+  (set-face-attribute 'default nil :height 150)
+#+end_src
+
+*** Maximum screen size
+
+#+begin_src emacs-lisp
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+#+end_src
+
+*** Cursor
+
+#+begin_src emacs-lisp
+  (blink-cursor-mode -1)
+#+end_src
+
+*** Width of buffer
+
+#+begin_src emacs-lisp
+  (setq split-width-threshold 150)
+#+end_src
+
+*** First page of emacs
+
+#+begin_src emacs-lisp
+  (setq inhibit-startup-message t)
+  (find-file "Main.org")
+#+end_src
+
+*** Starting as full screeen
+
+#+begin_src emacs-lisp
+(defun toggle-fullscreen ()
+  (interactive)
+  (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
+	    		 '(2 "_NET_WM_STATE_MAXIMIZED_VERT" 0))
+  (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
+	    		 '(2 "_NET_WM_STATE_MAXIMIZED_HORZ" 0))
+)
+(toggle-fullscreen)
+#+end_src
+
+*** Uniquify
+
+   When many buffers have the same names
+
+#+begin_src emacs-lisp
+(require 'uniquify)
+(setq uniquify-buffer-name-style 'forward)
+#+end_src
+
