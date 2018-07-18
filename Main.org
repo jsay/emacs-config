@@ -1,1 +1,48 @@
-Jean-Sauveur Ay
+#+TITLE:       Emacs Configuration
+#+AUTHOR:      Jean-Sauveur Ay | <[[mailto:jsay@inra.fr]]>
+#+OPTIONS:     LaTeX:t tags:nil toc:nil H:5 html-style:nil
+#+LANGUAGE:    en
+#+LaTeX_CLASS: ManueLisp
+#+STARTUP:     hideblocks
+#+DRAWERS:     PROPERTIES BABEL
+:BABEL:    
+#+PROPERTY: header-args :tangle "init.el" :results silent
+:END:      
+
+* TODO items							   :noexport:
+
+  - Group and harmonize bibliography stuff
+
+* README							   :noexport:
+** Presentation
+
+   Emacs configuration in =init.el= tangled (C-c C-v t) from
+   =Main.org=, work on Ubuntu 18.4.
+
+** Dependencies
+
+  Softwares (=sudo apt install=)
+
+  emacs / hunspell / r-base / texlive-file
+
+  emacs packages from manager, configuration:
+
+#+begin_src emacs-lisp
+(setq default-directory "/home/jsay/")
+(setq load-path (cons "/hone/jsay/emacs-config" load-path))
+(package-initialize)
+(setq package-archives '(("gnu"      . "http://elpa.gnu.org/packages/")
+                         ("marmalade". "http://marmalade-repo.org/packages/")
+                         ("melpa"    . "http://melpa.org/packages/")
+                         ("org"      . "http://orgmode.org/elpa/")))
+#+end_src
+ 
+
+
+  (load with =M-x list-packages=, choose with =i= and then =x=.
+
+  - cyber-punk theme : =http://github.com/n3mo/cyberpunk-theme.el=
+  - org
+  - pager
+  - ess
+  - auctex
