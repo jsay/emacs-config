@@ -27,7 +27,7 @@
 
   emacs packages from manager, configuration:
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle "~/.emacs.d/init.el"
 (setq default-directory "/home/jsay/")
 (setq load-path (cons "/hone/jsay/emacs-config" load-path))
 (package-initialize)
