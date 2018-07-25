@@ -33,3 +33,8 @@
 
 (require 'uniquify)
 (setq uniquify-buffer-name-style 'forward)
+
+(require 'ox-gfm)(eval-after-load "org"
+  '(require 'ox-gfm nil t))
+
+(global-set-key (kbd "C-x g") 'magit-status)
