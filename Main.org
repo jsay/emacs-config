@@ -9,25 +9,24 @@
 #+PROPERTY: header-args :tangle "init.el" :results silent
 :END:      
 
-* TODO items                                                       :noexport:
+* Pense-bête                                                       :noexport:
 
   - Group and harmonize bibliography stuff
   - Export README as md file to Github
   - see to create bercykeupon-theme.el in .emacs.d/themes/
+  - Allow title and author for markdown export
 
 * README                                                           :noexport:
   :PROPERTIES:
   :EXPORT_FILE_NAME: README
   :END:
-
-  Emacs configuration for Ubuntu 18.4.
-
+** Emacs configuration for Ubuntu 18.4.
 ** Dependencies
 *** Softwares (=sudo apt install=)
 
     emacs / hunspell / r-base / texlive-file
 
-*** Emacs packages
+*** Packages  (=package-install=)
 
     Package manager configuration (open with =M-x list-packages=,
     choose with =i= and then =x=)
