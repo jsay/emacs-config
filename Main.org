@@ -1,6 +1,6 @@
-#+TITLE:       My Emacs Configuration
-#+AUTHOR:      Jean-Sauveur Ay | <[[mailto:jsay@inra.fr]]>
-#+OPTIONS:     LaTeX:t tags:nil toc:nil H:5 html-style:nil
+# TITLE:       Emacs Configuration
+# AUTHOR:      Jean-Sauveur Ay
+#+OPTIONS:     LaTeX:t tags:nil toc:nil H:5 html-style:nil task:t
 #+LANGUAGE:    en
 #+LaTeX_CLASS: ManueLisp
 #+STARTUP:     hideblocks
@@ -9,13 +9,18 @@
 #+PROPERTY: header-args :tangle "init.el" :results silent
 :END:      
 
-* TODO items							   :noexport:
+* TODO items                                                       :noexport:
 
   - Group and harmonize bibliography stuff
   - Export README as md file to Github
   - see to create bercykeupon-theme.el in .emacs.d/themes/
 
 * README                                                           :noexport:
+  :PROPERTIES:
+  :EXPORT_FILE_NAME: README
+  :EXPORT_AUTHOR:    jsay
+  :EXPORT_TITLE:     ff
+  :END:
 ** Presentation
 
    Emacs configuration in =init.el= tangled (C-c C-v t) from
@@ -127,5 +132,19 @@
 #+begin_src emacs-lisp
 (require 'uniquify)
 (setq uniquify-buffer-name-style 'forward)
+#+end_src
+
+* ORG MODE
+** Export
+
+#+begin_src emacs-lisp
+(require 'ox-gfm)(eval-after-load "org"
+  '(require 'ox-gfm nil t))
+#+end_src
+
+* MAGIT
+
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-x g") 'magit-status)
 #+end_src
 
