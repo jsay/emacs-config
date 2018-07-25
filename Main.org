@@ -1,4 +1,4 @@
-#+TITLE:       Emacs Configuration
+#+TITLE:       My Emacs Configuration
 #+AUTHOR:      Jean-Sauveur Ay | <[[mailto:jsay@inra.fr]]>
 #+OPTIONS:     LaTeX:t tags:nil toc:nil H:5 html-style:nil
 #+LANGUAGE:    en
@@ -15,7 +15,7 @@
   - Export README as md file to Github
   - see to create bercykeupon-theme.el in .emacs.d/themes/
 
-* README							   :noexport:
+* README                                                           :noexport:
 ** Presentation
 
    Emacs configuration in =init.el= tangled (C-c C-v t) from
@@ -43,7 +43,7 @@
   (load with =M-x list-packages=, choose with =i= and then =x=.
 
   cyber-punk theme (melpa) / org (org) / magit (elpa) / pager
-  (marmalade) / ess (melpa) / auctex (gnu)
+  (marmalade) / ess (melpa) / auctex (gnu) / ox-gfm (melpa)
 
 * GENERAL
 ** Encoding
