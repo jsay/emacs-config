@@ -18,37 +18,43 @@
 * README                                                           :noexport:
   :PROPERTIES:
   :EXPORT_FILE_NAME: README
-  :EXPORT_AUTHOR:    jsay
-  :EXPORT_TITLE:     ff
   :END:
-** Presentation
 
-   Emacs configuration in =init.el= tangled (C-c C-v t) from
-   =Main.org=, work on Ubuntu 18.4.
+  Emacs configuration for Ubuntu 18.4.
 
 ** Dependencies
+*** Softwares (=sudo apt install=)
 
-  Softwares (=sudo apt install=)
+    emacs / hunspell / r-base / texlive-file
 
-  emacs / hunspell / r-base / texlive-file
+*** Emacs packages
 
-  emacs packages from manager, configuration:
+    Package manager configuration (open with =M-x list-packages=,
+    choose with =i= and then =x=)
 
 #+begin_src emacs-lisp :tangle "~/.emacs"
-(setq default-directory "/home/jsay/")
-(setq load-path (cons "~/emacs-config/" load-path))
 (setq package-archives '(("gnu"      . "http://elpa.gnu.org/packages/")
                          ("marmalade". "http://marmalade-repo.org/packages/")
                          ("melpa"    . "http://melpa.org/packages/")
                          ("org"      . "http://orgmode.org/elpa/")))
 (package-initialize)
+#+end_src
+
+    cyber-punk theme (melpa) / org (org) / magit (elpa) / pager
+    (marmalade) / ess (melpa) / auctex (gnu) / ox-gfm (melpa)
+
+** Use
+
+   Elisp code from this README are tangled (C-c C-v t) to "~/.emacs"
+   to be loaded automatically.
+
+   Other configurations are made on =Main.org=, tangled to =init.el=
+   and loaded as follows:
+
+#+begin_src emacs-lisp :tangle "~/.emacs"
+(setq default-directory "/home/jsay/")
 (load-library "~/emacs-config/init.el")
 #+end_src
- 
-  (load with =M-x list-packages=, choose with =i= and then =x=.
-
-  cyber-punk theme (melpa) / org (org) / magit (elpa) / pager
-  (marmalade) / ess (melpa) / auctex (gnu) / ox-gfm (melpa)
 
 * GENERAL
 ** Encoding
