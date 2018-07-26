@@ -9,15 +9,14 @@
 #+PROPERTY: header-args :tangle "init.el" :results silent
 :END:      
 
-* Pense-bête                                                       :noexport:
+* Pense-bête                                                                                                                              :noexport:
 
   - Group and harmonize bibliography stuff
-  - Export README as md file to GitHub
   - see to create bercykeupon-theme.el in .emacs.d/themes/
   - Allow title and author for markdown export
   - Skip babel blocks from org mode for spell-check.
 
-* README                                                           :noexport:
+* README                                                                                                                                  :noexport:
   :PROPERTIES:
   :EXPORT_FILE_NAME: README
   :END:
@@ -376,6 +375,12 @@
 
 #+begin_src emacs-lisp
 (setq require-final-newline t)
+#+end_src
+
+*** Location of tags
+
+#+begin_src emacs-lisp
+(setq org-tags-column 45)
 #+end_src
 
 ** Key-bindings
