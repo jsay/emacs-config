@@ -12,7 +12,7 @@
 * Pense-bête                                                       :noexport:
 
   - Group and harmonize bibliography stuff
-  - Export README as md file to Github
+  - Export README as md file to GitHub
   - see to create bercykeupon-theme.el in .emacs.d/themes/
   - Allow title and author for markdown export
   - Skip babel blocks from org mode for spell-check.
@@ -249,7 +249,7 @@
     A conflict on the central button of mouse.
 
 #+begin_src emacs-lisp
- (global-unset-key [mouse-2])
+;(global-unset-key [mouse-2])
 #+end_src
 
     hunspell is used 
@@ -526,7 +526,7 @@
 #+begin_src emacs-lisp
    (setq org-capture-templates
 	 '(("t" "Agenda"
-	    entry (file+headline  "~/Main.org" "Agenda")
+	    entry (file+headline  "~/Main.org" "AGENDA")
 				  "* TODO %?\n\n")))
 #+end_src
 
@@ -565,9 +565,1047 @@
                   "* %?\n entered on %U\n  %i\n  %a")))
 #+end_src
 
+* ESS
+** Starting values
+
+#+begin_src emacs-lisp
+(setq-default inferior-R-args "--no-restore-history --no-save")
+(add-hook 'ess-R-post-run-hook
+          (lambda () (set-buffer-process-coding-system 'utf-8 'utf-8)))
+#+end_src
+
+** Indentation
+
+#+begin_src emacs-lisp
+(setq comint-input-ring-size 1000)
+(setq ess-indent-level 4)
+(setq ess-arg-function-offset 4)
+(setq ess-else-offset 4)
+#+end_src
+
+** Completion
+
+#+begin_src emacs-lisp
+(global-set-key [C-tab] 'dabbrev-expand)
+; following do not work
+;(require 'auto-complete)
+;(add-to-list 'ac-dictionary-directories "/usr/share/auto-complete/dict/")
+;(require 'auto-complete-config)
+;(ac-config-default)
+(setq ess-use-auto-complete t)
+#+end_src
+
+** Command memory
+
+#+begin_src emacs-lisp
+(add-hook 'inferior-ess-mode-hook
+    '(lambda nil
+          (define-key inferior-ess-mode-map [\C-up]
+              'comint-previous-matching-input-from-input)
+          (define-key inferior-ess-mode-map [\C-down]
+              'comint-next-matching-input-from-input)
+          (define-key inferior-ess-mode-map [\C-x \t]
+              'comint-dynamic-complete-filename)))
+#+end_src
+
+** Drop the whitespace
+
+#+begin_src emacs-lisp 
+(setq ess-nuke-trailing-whitespace-p t)
+#+end_src
+
+* AUCTeX
+** General
+
+#+begin_src emacs-lisp
+(require 'tex-site)
+#+end_src
+
+** Utilities
+
+#+begin_src emacs-lisp
+(setq TeX-auto-save t)
+(setq TeX-electric-sub-and-superscript t)
+(setq TeX-parse-self t)
+(setq TeX-save-query nil)
+#+end_src
+
+** Compilation patterns
+
+#+begin_src emacs-lisp
+(list "Clean" "del %s.aux %s.log %s.out %s.toc %s.bbl %s.blg" 'TeX-run-command nil t)
+(setq TeX-PDF-mode t)
+(setq-default TeX-master t)
+(setq TeX-command-force "")
+(add-hook 'LaTeX-mode-hook
+          '(lambda()
+             (define-key LaTeX-mode-map "\C-c\C-a"
+               (lambda (arg) (interactive "P")
+                 (let ((TeX-command-force nil))
+                   (TeX-command-master arg))))))
+#+end_src
+
+** Shifting between errors
+
+#+begin_src emacs-lisp
+(global-set-key [M-n] 'TeX-next-error)
+#+end_src
+
+** Table alignments
+
+#+begin_src emacs-lisp
+(global-set-key (kbd "\C-c t") 'align-current)
+#+end_src
+
 * MAGIT
 
 #+begin_src emacs-lisp
 (global-set-key (kbd "C-x g") 'magit-status)
 #+end_src
 
+* BIBLIO
+
+   UNDER PROGRESS REST NOT TANGLED
+
+#+begin_src emacs-lisp tangle yes
+(autoload 'helm-bibtex "helm-bibtex" "" t)
+; (require 'ox-bibtex)
+#+end_src
+
+** RefTeX
+*** Classic loading
+
+#+begin_src emacs-lisp tangle no
+(require 'reftex)
+(add-hook 'LaTeX-mode-hook 'turn-on-reftex)   ; with AUCTeX LaTeX mode
+(autoload 'reftex-mode     "reftex" "RefTeX Minor Mode" t)
+(autoload 'turn-on-reftex  "reftex" "RefTeX Minor Mode" nil)
+(autoload 'reftex-citation "reftex-cite" "Make citation" nil)
+(autoload 'reftex-index-phrase-mode "reftex-index" "Phrase mode" t)
+(add-hook 'LaTeX-mode-hook 'turn-on-reftex)   ; with AUCTeX LaTeX mode
+(add-hook 'latex-mode-hook 'turn-on-reftex)   ; with Emacs latex mode
+#+end_src
+
+*** Make it faster
+
+#+begin_src emacs-lisp tangle no
+(setq reftex-enable-partial-scans t)
+(setq reftex-save-parse-info t)
+(setq reftex-use-multiple-selection-buffers t)
+(setq reftex-plug-into-AUCTeX t)
+#+end_src
+
+*** Interactions with org-mode
+
+    use =C-c (= instead of =C-c [= because the latter is already
+    defined in orgmode to the add-to-agenda command.
+
+#+begin_src emacs-lisp tangle no
+(defun org-mode-reftex-setup ()
+  (load-library "reftex") 
+  (and (buffer-file-name)
+  (file-exists-p (buffer-file-name))
+  (reftex-parse-all))
+  (define-key org-mode-map (kbd "C-c (") 'reftex-citation))
+(add-hook 'org-mode-hook 'org-mode-reftex-setup)
+#+end_src
+
+*** Format for biblatex
+
+    Instead of natbib, not tangled for the moment.
+
+#+begin_src emacs-lisp tangle no
+(setq reftex-cite-format
+      '(
+        (?\C-m . "\\cite[]{%l}")
+        (?t . "\\textcite{%l}")
+        (?a . "\\autocite[]{%l}")
+        (?p . "\\parencite{%l}")
+        (?f . "\\footcite[][]{%l}")
+        (?F . "\\fullcite[]{%l}")
+        (?x . "[]{%l}")
+        (?X . "{%l}")
+        ))
+#+end_src
+
+*** Match reference keywords
+
+    Also not tangled
+
+#+begin_src emacs-lisp tangle no
+(setq font-latex-match-reference-keywords
+      '(("cite" "[{")
+        ("cites" "[{}]")
+        ("footcite" "[{")
+        ("footcites" "[{")
+        ("parencite" "[{")
+        ("textcite" "[{")
+        ("fullcite" "[{") 
+        ("citetitle" "[{") 
+        ("citetitles" "[{") 
+        ("headlessfullcite" "[{")))
+(setq reftex-cite-prompt-optional-args nil)
+(setq reftex-cite-cleanup-optional-args t)
+#+end_src
+
+** Org-mode
+
+    For the refile of bibliography captures, with completion
+
+#+begin_src emacs-lisp tangle no
+(require 'org-bibtex)
+(defun my-location-bib (type)
+  "If there is completion support for link type TYPE, offer it."
+  (let ((fun (intern (concat "org-" type "-complete-link"))))
+    (if (functionp fun)
+	(funcall fun)
+      (read-string "Link (no completion support): " (concat type ":")))))
+#+end_src
+
+    Suite à un message sur la liste
+
+#+begin_src emacs-lisp tangle no
+(org-add-link-type                       
+ "ref"
+ (lambda (key)
+   (org-open-file cby-references-file t nil key))
+ (lambda (path desc format)
+   (cond
+    ((eq format 'html)
+     (let* ((postnote (cby-org-link-get-postnote desc))
+            (prenote (cby-org-link-get-prenote desc)))
+       (cond
+        ((and postnote)
+     (format "<a href= \"#%s\">%s</a>" path postnote)))))
+    ((eq format 'latex)
+     (let* ((postnote (cby-org-link-get-postnote desc))
+            (prenote (cby-org-link-get-prenote desc)))
+       (cond
+        ((and prenote)
+	  (format "\\cite%s{%s}" prenote path))
+	 (t
+	  (format "\\cite{%s}" path))))))))
+
+(defun cby-org-link-get-prenote (desc)
+     "Extract prenote from org-mode link description. Prenote
+      starts at the first '(' and ends at first ','."
+     (let ((prenote (cadr (split-string desc "[\",]"))))
+       (if prenote
+           (copy-sequence
+            ;; clean string
+            (replace-regexp-in-string "[ \t\n]" "" prenote)))))
+(defun cby-org-link-get-postnote (desc)
+     "Extract postnote from org-mode link description. Postnote
+      starts at last ',' and ends at last ')'."
+     (let ((postnote (cadr (split-string desc "[,]"))))
+       (if postnote
+           (copy-sequence
+            ;; clean string
+            (replace-regexp-in-string "[ \t\n]" "" postnote)))))
+#+end_src
+
+** Export Bibliography
+
+    The general configuration of citations with org-mode is done by
+    =ox-bibtex=, loaded in [[latex:autoref][INTRO]]. But I think that a new configuration
+    is created by NGZ, to test. Here it is just for citation, all the
+    bibliography management (equally with org-mode) is presented in:
+    [[~/elisp/Config.org]].
+
+ #+begin_src emacs-lisp :tangle no
+   (org-add-link-type "cite"
+    (lambda (item format)
+      (cond
+       ((eq format 'html)
+	(format "(<cite>%s</cite>)" item))
+       ((eq format 'latex)
+            (format "\\cite{%s}" item)
+                  (cadr (split-string desc ";"))
+                  (car (split-string desc ";"))  item))))
+   (org-add-link-type "latex" nil
+    (lambda (path desc format)
+      (cond
+       ((eq format 'html)
+	(format "(<span style= \"color:grey;\">%s</span>)" desc))
+       ((eq format 'latex)
+            (format "\\%s{%s}" path desc)))))
+ #+end_src
+
+* EXPORT
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: Export-config.pdf
+   :END:
+** <<INTRO>> Introduction
+
+   This files describe a configuration for the org-mode exporter that
+   comes with the version 8.0 following emacs 24. This presents all the
+   =elisp= material, that can be tangled (=C-c C-v t=) to create
+   =Export.el= and be loaded directly by emacs (see =load-path=).
+
+   The flexibility of the exporter allows to have a default class (when
+   XXX is not specified) and numerous custom classes that are described
+   in [[latex:autoref][LXCST]], according to the different type of document you want to
+   produce. How I share the two parts.
+
+#+begin_src emacs-lisp
+(setq org-odt-data-dir nil)
+(setq org-html-coding-system 'utf-8-unix)
+(require 'ox-beamer)
+(add-to-list 'org-export-backends 'beamer)
+ #+end_src
+
+** <<ELISP>> General settings
+*** Background export
+
+   I am not sure I still use the =BIND= keywords. The export in
+   background is currently not working (so set to =nil=). Maybe on a
+   new version of emacs it could run.
+
+#+name: todo
+#+begin_src emacs-lisp
+(setq org-export-allow-bind-keywords t)
+;(setq org-export-in-background t)
+#+end_src
+
+*** Emphasis
+
+    Make a particular emphasis item, shared by all backend, to put the
+    considered words in bigger font size. It is used in particular
+    for my cv. NOT WORKING
+
+ #+begin_src emacs-lisp
+ (add-to-list 'org-emphasis-alist '("¤" bold))
+ #+end_src
+
+*** Verbatim
+
+    An underused possibility is to add a filter on the =verbatim=
+    environment from LaTex. It is interesting as a first exemple of
+    what filter can do, no tangled but could be used in the future.
+
+ #+begin_src emacs-lisp
+   (defun my-latex-fixed-width-filter (fixed-width backend info)
+       (replace-regexp-in-string
+	"\\(begin\\|end\\){\\(verbatim\\)}"
+	"something" fixed-width nil nil 2))
+   (add-to-list 'org-export-filter-fixed-width-functions
+		'my-latex-fixed-width-filter)
+ #+end_src
+
+    Now, in the preamble of the exported file, one has to customize an
+    environment =something= to do what is needed.
+
+*** Headlines
+
+    To structure a document without this appears in the exported file,
+    the tag =noheading= is useful. It is defined in the following code.
+
+ #+begin_src emacs-lisp
+ (defun my-export-delete-headlines-tagged-noheading (backend)
+   (dolist (hl (nreverse (org-element-map 
+			     (org-element-parse-buffer 'headline)
+			                               'headline
+			                               'identity)))
+     (when (member "noheading" (org-element-property :tags hl))
+       (goto-char (org-element-property :begin hl))
+       (delete-region (point) (progn (forward-line) (point))))))
+ (add-to-list 'org-export-before-processing-hook
+	      'my-export-delete-headlines-tagged-noheading)
+ ;; (defun as/delete-ignored-heading (backend)
+ ;;       "Remove every headline with a tag `ignoreheading' in the
+ ;;     current buffer. BACKEND is the export back-end being used, as
+ ;;     a symbol."
+ ;;       (org-map-entries
+ ;;        (lambda () (delete-region (point) (progn (forward-line) (point))))
+ ;;        "+ignoreheading"))
+ ;; AN ALTERNATIVE WITH NOHEAD
+ ;; (defun my-ignore-headline (contents backend info)
+ ;;   "Ignore headlines with tag `nohead'."
+ ;;   (when (and (org-export-derived-backend-p backend 'latex 'html 'ascii)
+ ;; 	     (string-match "\\`.*nohead.*\n"
+ ;; 			   (downcase contents)))
+ ;;     (replace-match "" nil nil contents)))
+ ;; (add-to-list 'org-export-filter-headline-functions 'my-ignore-headline)
+ #+end_src
+
+*** Filter for non-breaking spaces
+
+    It is a suggestion from NGZ that put =~= at the place of all space
+    in the generated LaTeX file. I do not find it very useful but keep
+    it as an example of filter.
+
+ #+name: nbsp
+ #+begin_src emacs-lisp
+ (defun ngz-latex-filter-nobreaks (text backend info)
+   "Ensure \"_\" are properly handled in Beamer/LaTeX export."
+   (when (memq backend '(beamer latex))
+     (replace-regexp-in-string " " "~" text)))
+ (add-to-list 'org-export-filter-plain-text-functions
+	      'ngz-latex-filter-nobreaks)
+ #+end_src
+
+** <<LATEX>> LaTeX setup
+*** <<LXGEN>> General
+**** Functioning
+
+ #+begin_src emacs-lisp
+ ;; DROP THE USELESS LATEX FILES
+ (list "Clean" "del %s.bbl %s.blg %s.aux %s.blg %s.out" 'org-latex-pdf-process nil t)
+ ;; DEFINE THE PROCESS OF COMPILATION
+ (setq org-latex-pdf-process 
+       '("pdflatex %b" "bibtex %b" "pdflatex %b" "pdflatex %b" "Clean"))
+ ;(setq org-latex-hyperref-format "\\ref{%s}")
+ (setq org-latex-toc-command
+       "\\begin{spacing}{1}\n \\tableofcontents\n\\end{spacing}\n\\clearpage")
+ ;; IMPORTANT FOR THE BABEL CODE BETWEEN BUFFERS
+ (setq org-src-preserve-indentation t)
+ #+end_src
+
+**** Packages
+
+     There are two lists of LaTeX packages in the core of org-mode:
+     =org-latex-default-packages-alist= and
+     =org-latex-packages-alist=. The first is loaded before and is made
+     to not be customizable. The only problem is a conflict between the
+     default package =wasysym= and the often used =amsmath= (about
+     multiple integrals), so I change a specific option as follows.
+
+ #+name: default-packages
+ #+begin_src emacs-lisp :tangle no
+ (setcar (rassoc '("wasysym" t) org-latex-default-packages-alist) "integrals")
+ #+end_src
+
+     The second list of package reflects my preferences about a generic
+     org-mode file exported to LaTeX. The main interest of these
+     packages is to make org-mode files exchangeable. A joint interest
+     is to put here all packages that are used in custom class to limit
+     the size of this file but this is in contradiction with the other
+     goal to keep this configuration minimal to be exchangeable. The
+     third elements of =org-latex-packages-alist= is =t= for packages
+     that are needed to display LaTeX fragments in org-mode buffers.
+
+#+name: latex-packages
+#+begin_src emacs-lisp :tangle no
+(setq org-latex-packages-alist nil)
+(add-to-list 'org-latex-packages-alist '(""         "microtype"))
+(add-to-list 'org-latex-packages-alist '(""         "graphicx" ))
+(add-to-list 'org-latex-packages-alist '(""         "ragged2e" ))
+(add-to-list 'org-latex-packages-alist '(""         "booktabs" ))
+(add-to-list 'org-latex-packages-alist '("official" "eurosym"  ))
+(add-to-list 'org-latex-packages-alist '("utf8"     "inputenc" ))
+(add-to-list 'org-latex-packages-alist '(""         "paralist" )) 
+(add-to-list 'org-latex-packages-alist '(""         "amstext"  t))
+(add-to-list 'org-latex-packages-alist '(""         "amsmath"  t))
+#+end_src
+
+     The package =setspace= is not here because of a clash with the
+     calls =ManueStat=. There are also some clashes with the class
+     curriculum vitae: to search.
+
+**** Pretty entities
+
+     To facilitate the use of strange entities (like a cap letter with
+     an accent). The default entities are in the variable
+     =org-entities= but are really difficult to remember. Hopefully, we
+     can customize =org-entites-user= according to the same structure.
+
+ #+begin_src emacs-lisp :tangle no
+ (setq org-entities-user nil)
+ (add-to-list 'org-entities-user '(("space" "\\ "  nil " " " " " " " ")))
+ (add-to-list 'org-entities-user '(("RLOG"  "\\texttt{\\bfseries R}" nil "R" "R" "R" "R")))
+ #+end_src
+
+**** Dispatcher menu
+
+     Before org-mode 8.0, we have to define by hands the beamer backend
+     as derived from LaTeX and put it in the dispatcher. It is now done
+     automatically by =ox-beamer=, so the following code is not tangled
+     (the names of variables is still old school).
+
+ #+begin_src emacs-lisp :noweb yes :results silent :tangle no
+ (org-export-define-derived-backend e-beamer e-latex
+   :export-block "BEAMER"
+   :menu-entry
+   '((?g "As PDF file (Beamer)" org-e-beamer-export-to-pdf)
+     (?G "As PDF file and open (Beamer)"
+	 (lambda (s v b)
+	   (org-open-file (org-e-beamer-export-to-pdf s v b))))))
+ #+end_src
+
+     It is important to show how the dispatcher is working.
+
+*** <<LXCST>> Custom classes
+**** CovLetter
+
+     For the redaction of cover letters, maybe I will have a look on
+     [[http://orgmode.org/worg/exporters/koma-letter-export.html][Koma letters]]
+
+ #+name: ClCovLetter
+ #+begin_src emacs-lisp :tangle no :results silent
+   (add-to-list 'org-latex-classes
+		'("CovLetter"
+                  "\\documentclass[12pt, a4paper]{article}
+      \\usepackage{amsmath, amssymb, amsthm, amsfonts}
+      \\usepackage{graphicx, color, natbib, url, setspace}
+      \\usepackage[left=1in, right=1in, top=1in, bottom=0.75in, includefoot,
+                   headheight=13.6pt]{geometry}
+      \\usepackage[adobe-utopia]{mathdesign}
+                   [NO-PACKAGES]
+      \\parindent 20pt \\parskip 1ex
+      \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue]{hyperref}"
+                      ("\\subsubsection*{%s}"   . "\\subsubsection*{%s}")
+                      ("\\par"             . "")))
+ #+end_src
+
+**** CuriVitae
+
+     To produce the =.pdf= version of a curriculum vitae. It uses a
+     custom =.cls= LaTeX file named =cv2=.
+
+ #+name: ClCuriVitae
+ #+begin_src emacs-lisp :tangle no :results silent
+   (add-to-list 'org-latex-classes
+		'("CuriVitae"
+	          "\\documentclass[12pt, a4paper]{/media/HD/Latex/cv2}
+                  [NO-DEFAULT-PACKAGES]
+                  \\usepackage{natbib}
+                  \\usepackage{bibentry}
+                  \\newcommand{\\bibverse}[1]{\\bibentry{#1}.\\newline}
+                  \\usepackage{comment, csquotes}
+                  \\usepackage[adobe-utopia]{mathdesign}
+                  \\let\\progstruct=\\texttt
+                  \\newcommand{\\progexample}[1]{{\\ttfamily\\small #1}}"
+	          ("\\titre{%s}"                 . "\\titre{%s}"    )
+	          ("\\soustitre{%s}"             . "\\soustitre{%s}" )
+	          ("\\bibentry{%s}"              . "\\bibentry{%s}")))
+ #+end_src
+
+**** ManueBibt
+
+     This class is to formate a biblio file with BibTeX entries. Some
+     attention has to be made with =bookmarksdepth= in the arguments of
+     the package =hyperref= because there are some urls in subsections
+     that make the compilation bugging. I've dropped the bookmarks of
+     the pdf.
+
+ #+name: ClManueBibt
+ #+begin_src emacs-lisp :tangle no :results silent
+   (add-to-list 'org-latex-classes
+		'("ManueBibt"
+                  "\\documentclass[12pt]{article}
+                  [NO-DEFAULT-PACKAGES]
+                  [PACKAGES]
+                  [EXTRA]
+ \\usepackage[sf]{titlesec} \\usepackage{natbib}
+ \\parindent 20pt \\parskip 1ex
+ %\\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue, bookmarksdepth= 1]{hyperref}
+ \\usepackage[left= 1in, right=  1in, top=  1in, bottom= 1in]{geometry}
+                  \\usepackage{ascii, mathptmx, listings, xcolor, setspace}
+                  \\let\\itemize\\compactitem
+                  \\let\\description\\compactdesc
+                  \\let\\enumerate\\compactenum
+ \\lstset{backgroundcolor= \\color[gray]{.85}, basicstyle= \\small\\ttfamily,
+          breaklines= true, keywordstyle= \\color{red!75}, columns= fullflexible}
+ \\lstdefinelanguage{bibtex}{keywords={@article, @book, @collectedbook,
+       @conference, @electronic, @ieeetranbstctl, @inbook, @incollectedbook,
+       @incollection, @injournal, @inproceedings, @manual, @mastersthesis,
+       @misc, @patent, @periodical, @phdthesis, @preamble, @proceedings, @standard,
+       @string, @techreport, @unpublished}, comment=[l][\\itshape]{@comment}, sensitive=false}"
+                  ("\\section{%s}"       . "\\section*{%s}")
+                  ("\\subsection{%s}"    . "\\subsection*{%s}")
+                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                  ("\\paragraph{%s}"     . "\\paragraph*{%s}")
+                  ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
+ #+end_src
+
+**** ManueLisp
+
+    A class for all org-mode files that contains principally =elisp=
+    code for my configuration of emacs.
+
+ #+name: ClManueLisp
+ #+begin_src emacs-lisp :tangle no :results silent
+ (add-to-list 'org-latex-classes
+      '("ManueLisp"
+	"\\documentclass[12pt]{article}
+         [NO-DEFAULT-PACKAGES]
+         [PACKAGES]
+         [EXTRA]
+  \\usepackage[T1]{fontenc}
+  \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue]{hyperref}
+  \\usepackage[left= 1in, right=  1in, top=  1in, bottom= 1in]{geometry}
+  \\usepackage{fourier, ascii, listings, setspace, color, natbib}
+  \\let\\itemize\\compactitem 
+	\\let\\description\\compactdesc \\let\\enumerate\\compactenum
+  \\lstloadlanguages{Lisp} \\definecolor{gray}{rgb}{0.5,0.5,0.5}
+  \\lstset{language= Lisp, commentstyle= \\color{gray},
+           basewidth= .51em, tabsize= 2, frame= tb,
+           xleftmargin= 0.3cm, framexleftmargin=   10pt,
+           aboveskip=   0.5cm,  framextopmargin=    6pt,
+           belowskip=   0.5cm,  framexbottommargin= 6pt, 
+           firstnumber= 1, numbersep= 5pt,
+           basicstyle= {\\small  \\ttfamily\\bfseries},
+           stringstyle= \\ttfamily\\bfseries\\color{blue}, 
+           showstringspaces= false, breaklines=true,}"
+                  ("\\section{%s}"       . "\\section*{%s}")
+                  ("\\subsection{%s}"    . "\\subsection*{%s}")
+                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                  ("\\paragraph{%s}"     . "\\paragraph*{%s}")
+                  ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
+ #+end_src
+
+**** ManueStat
+
+     The class for reproducible statical analysis, using principally R
+     software.
+
+ #+name: ClManueStat
+ #+begin_src emacs-lisp :tangle no :results silent
+   (add-to-list 'org-latex-classes
+		'("ManueStat"
+                  "\\documentclass[11pt]{article}
+			[NO-DEFAULT-PACKAGES]
+    \\parindent 20pt \\parskip 1ex \\usepackage{natbib, dcolumn}
+     \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue]{hyperref}
+      \\hypersetup{bookmarksnumbered, pdfstartview= {FitH}, citecolor= {blue},
+                   linkcolor= {red}, urlcolor= {blue}, pdfpagemode= None}
+     \\usepackage[left= 1in, right= 1in, top= 1in, bottom= 1in]{geometry}
+     \\usepackage[singlespacing]{setspace} \\usepackage[bottom]{footmisc}
+     \\usepackage{dcolumn} 
+       \\setlength{\\belowcaptionskip}{5pt} \\usepackage{subcaption}
+       \\usepackage{mathpazo, amscd, upgreek, booktabs, listings, color, longtable, amssymb, bm}  
+                      \\let\\itemize\\compactitem
+                       \\let\\description\\compactdesc
+			\\let\\enumerate\\compactenum
+   \\lstloadlanguages{R} \\definecolor{storg}{rgb}{1,0.5,0}
+    \\definecolor{gray}{rgb}{0.5,0.5,0.5}
+     \\newcommand{\\indexfonction}[1]{\\index{#1@\\texttt{#1}}}
+     \\lstset{language= R, basewidth= .51em, tabsize= 2,
+       inputencoding=utf8,
+       literate={à}{{\\'a}}1 {è}{{\\`e}}1 {é}{{\\'e}}1 {ù}{{\\`u}}1
+		{ç}{{\c{c}}}1 {ï}{{i}}1 {ö}{{o}}1 {û}{{\\^u}}1,
+       xleftmargin= 0.3cm, framexleftmargin=   10pt,
+       aboveskip=   0.5cm,  framextopmargin=    6pt,
+       belowskip=   0.5cm,  framexbottommargin= 6pt,
+       showstringspaces= false, extendedchars= true,
+       commentstyle=      \\color{gray} , frame= tb,
+       keywordstyle=       \\color{storg},
+       backgroundcolor=     \\color{white},
+       basicstyle= {\\footnotesize  \\ttfamily\\bfseries},
+       stringstyle= \\ttfamily\\bfseries\\color{blue}}"
+			("\\section{%s}"       . "\\section*{%s}")
+			("\\subsection{%s}"    . "\\subsection*{%s}")
+			("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+			("\\paragraph{%s}"     . "\\paragraph*{%s}")
+			("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
+ #+end_src
+
+**** PlanCours
+
+     The class to produce course syllabus.
+
+ #+name: ClPlanCours
+ #+begin_src emacs-lisp :tangle no :results silent
+     (add-to-list 'org-latex-classes
+                  '("PlanCours"
+                    "\\documentclass[13pt]{article}
+                    [NO-DEFAULT-PACKAGES]
+                    [PACKAGES]
+                    [EXTRA]
+   \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue]{hyperref}
+   \\usepackage[left= 1in, right= 1in, top= 1in, bottom= 1in]{geometry}
+                    \\usepackage{fouriernc, inconsolata, natbib}"
+                    ("\\section*{%s}"      . "\\section*{%s}")
+                    ("%s ; "               . "%s ; ")))
+ #+end_src
+
+**** PresPrint
+
+     A beamer presentation where some commentaries can be put on the
+     printed version.
+
+ #+name: ClPresPrint
+ #+begin_src emacs-lisp :tangle no :results silent
+   (add-to-list 'org-latex-classes
+		'("PresPrint"
+                  "\\documentclass[bigger]{beamer}
+                   \\usepackage{/home/jsay/Org/Latex/handoutWithNotes}
+                   \\pgfpagesuselayout{3 on 1 with notes}[a4paper,border shrink=5mm]
+                  [NO-DEFAULT-PACKAGES]\\usepackage{natbib}"
+                  ("\\section*{%s}"       . "\\section*{%s}")
+                  ("\\subsection*{%s}"    . "\\subsection*{%s}")
+                  ("\\subsubsection*{%s}" . "\\subsubsection*{%s}")
+                  ("\\paragraph*{%s}"     . "\\paragraph*{%s}")
+                  ("\\subparagraph*{%s}"  . "\\subparagraph*{%s}")))
+ #+end_src
+
+**** PresOther
+
+ #+name: ClPlanCours
+ #+begin_src emacs-lisp :tangle no :results silent
+   (add-to-list 'org-latex-classes
+		'("PresOther"
+                  "\\documentclass[serif, 13pt]{beamer}
+                  [NO-PACKAGES]
+                  \\setbeamercolor{alerted text}{fg= beamer@blendedblue!50}
+                  \\usepackage[T1]{fontenc}
+                  \\usepackage[style=nejm, url=false, backend=bibtex]{biblatex} 
+                  \\usepackage{ctable, graphics, epsfig, hyperref, color, url, concmath, amssymb, pifont}
+                  \\setbeamertemplate{navigation symbols}{} \\definecolor{violet}{rgb}{0.25,0,0.75}
+ \\makeatletter
+ \\ExecuteBibliographyOptions{sorting=none}
+
+ \\DeclareCiteCommand{\\notefullcite}[\\mkbibbrackets]
+   {\\usebibmacro{cite:init}%
+    \\usebibmacro{prenote}}
+   {\\usebibmacro{citeindex}%
+    \\usebibmacro{notefullcite}%
+    \\usebibmacro{cite:comp}}
+   {}
+   {\\usebibmacro{cite:dump}%
+    \\usebibmacro{postnote}}
+
+ \\newbibmacro*{notefullcite}{%
+   \\ifciteseen
+     {}
+     {\\footnotetext[\\thefield{labelnumber}]{%
+	\\usedriver{}{\\thefield{entrytype}}.}}}
+ \\DeclareCiteCommand{\\superfullcite}[\\cbx@superscript]%
+   {\\usebibmacro{cite:init}%
+    \\let\\multicitedelim=\\supercitedelim
+    \\iffieldundef{prenote}
+      {}
+      {\\BibliographyWarning{Ignoring prenote argument}}%
+    \\iffieldundef{postnote}
+      {}
+      {\\BibliographyWarning{Ignoring postnote argument}}}
+   {\\usebibmacro{citeindex}%
+    \\usebibmacro{superfullcite}%
+    \\usebibmacro{cite:comp}}
+   {}
+   {\\usebibmacro{cite:dump}}
+ \\newbibmacro*{superfullcite}{%
+   \\ifciteseen
+     {}
+     {\\xappto\\cbx@citehook{%
+	\\noexpand\\footnotetext[\\thefield{labelnumber}]{%
+          \\fullcite{\\thefield{entrykey}}.}}}}
+ \\newrobustcmd{\\cbx@superscript}[1]{%
+  \\mkbibsuperscript{#1}%
+   \\cbx@citehook
+   \\global\\let\\cbx@citehook=\\empty}
+ \\let\\cbx@citehook=\\empty"
+                  ("\\section{%s}"       . "\\section*{%s}")
+                  ("\\subsection{%s}"    . "\\subsection*{%s}")
+                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                  ("\\paragraph{%s}"     . "\\paragraph*{%s}")
+                  ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
+ #+end_src
+
+**** PresSemin (ENG)
+
+     A classical beamer class to present into seminaries and workshops.
+
+ #+name: ClPlanCours
+ #+begin_src emacs-lisp :tangle no :results silent
+   (add-to-list 'org-latex-classes
+		'("PresSemin"
+                  "\\documentclass[serif, 14pt, aspectratio=169]{beamer}
+                  [NO-PACKAGES]
+                  \\setbeamercolor{alerted text}{fg= beamer@blendedblue!50}
+                  \\usepackage[T1]{fontenc}
+                  \\usepackage[style=nejm, url=false, backend=bibtex]{biblatex} 
+                  \\usepackage{ctable, graphics, epsfig, hyperref, color, url, concmath, amssymb, pifont}
+                  \\setbeamertemplate{navigation symbols}{} \\definecolor{violet}{rgb}{0.25,0,0.75}
+                  \\AtBeginSection[]{
+                  \\begin{frame}<beamer>
+                  \\frametitle{Outline}
+                  \\tableofcontents[currentsection]
+                  \\end{frame}}
+                  \\hypersetup{urlcolor= {blue}}
+ \\makeatletter
+ \\ExecuteBibliographyOptions{sorting=none}
+
+ \\DeclareCiteCommand{\\notefullcite}[\\mkbibbrackets]
+   {\\usebibmacro{cite:init}%
+    \\usebibmacro{prenote}}
+   {\\usebibmacro{citeindex}%
+    \\usebibmacro{notefullcite}%
+    \\usebibmacro{cite:comp}}
+   {}
+   {\\usebibmacro{cite:dump}%
+    \\usebibmacro{postnote}}
+
+ \\newbibmacro*{notefullcite}{%
+   \\ifciteseen
+     {}
+     {\\footnotetext[\\thefield{labelnumber}]{%
+	\\usedriver{}{\\thefield{entrytype}}.}}}
+ \\DeclareCiteCommand{\\superfullcite}[\\cbx@superscript]%
+   {\\usebibmacro{cite:init}%
+    \\let\\multicitedelim=\\supercitedelim
+    \\iffieldundef{prenote}
+      {}
+      {\\BibliographyWarning{Ignoring prenote argument}}%
+    \\iffieldundef{postnote}
+      {}
+      {\\BibliographyWarning{Ignoring postnote argument}}}
+   {\\usebibmacro{citeindex}%
+    \\usebibmacro{superfullcite}%
+    \\usebibmacro{cite:comp}}
+   {}
+   {\\usebibmacro{cite:dump}}
+ \\newbibmacro*{superfullcite}{%
+   \\ifciteseen
+     {}
+     {\\xappto\\cbx@citehook{%
+	\\noexpand\\footnotetext[\\thefield{labelnumber}]{%
+          \\fullcite{\\thefield{entrykey}}.}}}}
+ \\newrobustcmd{\\cbx@superscript}[1]{%
+  \\mkbibsuperscript{#1}%
+   \\cbx@citehook
+   \\global\\let\\cbx@citehook=\\empty}
+ \\let\\cbx@citehook=\\empty"
+                  ("\\section{%s}"       . "\\section*{%s}")
+                  ("\\subsection{%s}"    . "\\subsection*{%s}")
+                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                  ("\\paragraph{%s}"     . "\\paragraph*{%s}")
+                  ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
+ #+end_src
+
+**** PresSemin (FR)
+
+     A classical beamer class to present into seminaries and workshops.
+
+ #+name: ClPlanCours
+ #+begin_src emacs-lisp :tangle no :results silent
+   (add-to-list 'org-latex-classes
+		'("PresSeminF"
+                  "\\documentclass[serif, 14pt, aspectratio=169]{beamer}
+                  [NO-PACKAGES]
+                  \\setbeamercolor{alerted text}{fg= beamer@blendedblue!50}
+                  \\usepackage[T1]{fontenc}
+                  \\usepackage[style=nejm, url=false, backend=bibtex]{biblatex} 
+                  \\usepackage{ctable, graphics, epsfig, hyperref, color, url, concmath, amssymb, pifont}
+                  \\setbeamertemplate{navigation symbols}{} \\definecolor{violet}{rgb}{0.25,0,0.75}
+                  \\AtBeginSection[]{
+                  \\begin{frame}<beamer>
+                  \\frametitle{Plan}
+                  \\tableofcontents[currentsection]
+                  \\end{frame}}
+                  \\hypersetup{urlcolor= {blue}}
+ \\makeatletter
+ \\ExecuteBibliographyOptions{sorting=none}
+
+ \\DeclareCiteCommand{\\notefullcite}[\\mkbibbrackets]
+   {\\usebibmacro{cite:init}%
+    \\usebibmacro{prenote}}
+   {\\usebibmacro{citeindex}%
+    \\usebibmacro{notefullcite}%
+    \\usebibmacro{cite:comp}}
+   {}
+   {\\usebibmacro{cite:dump}%
+    \\usebibmacro{postnote}}
+
+ \\newbibmacro*{notefullcite}{%
+   \\ifciteseen
+     {}
+     {\\footnotetext[\\thefield{labelnumber}]{%
+	\\usedriver{}{\\thefield{entrytype}}.}}}
+ \\DeclareCiteCommand{\\superfullcite}[\\cbx@superscript]%
+   {\\usebibmacro{cite:init}%
+    \\let\\multicitedelim=\\supercitedelim
+    \\iffieldundef{prenote}
+      {}
+      {\\BibliographyWarning{Ignoring prenote argument}}%
+    \\iffieldundef{postnote}
+      {}
+      {\\BibliographyWarning{Ignoring postnote argument}}}
+   {\\usebibmacro{citeindex}%
+    \\usebibmacro{superfullcite}%
+    \\usebibmacro{cite:comp}}
+   {}
+   {\\usebibmacro{cite:dump}}
+ \\newbibmacro*{superfullcite}{%
+   \\ifciteseen
+     {}
+     {\\xappto\\cbx@citehook{%
+	\\noexpand\\footnotetext[\\thefield{labelnumber}]{%
+          \\fullcite{\\thefield{entrykey}}.}}}}
+ \\newrobustcmd{\\cbx@superscript}[1]{%
+  \\mkbibsuperscript{#1}%
+   \\cbx@citehook
+   \\global\\let\\cbx@citehook=\\empty}
+ \\let\\cbx@citehook=\\empty"
+                  ("\\section{%s}"       . "\\section*{%s}")
+                  ("\\subsection{%s}"    . "\\subsection*{%s}")
+                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                  ("\\paragraph{%s}"     . "\\paragraph*{%s}")
+                  ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
+ #+end_src
+
+**** RapRefere
+
+     The class to make referee reports, not well used because often
+     =.pdf= is not a good format.
+
+ #+name: RapRefere
+ #+begin_src emacs-lisp :tangle no :results silent
+     (add-to-list 'org-latex-classes
+                  '("RapRefere"
+                    "\\documentclass[12pt]{article}
+                    [NO-DEFAULT-PACKAGES]
+                    [PACKAGES]
+                    [EXTRA]
+   \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue, citecolor= black]{hyperref}
+                    \\parindent 20pt \\parskip 1ex
+                    \\usepackage{mathptmx, txfonts, natbib, etoolbox}
+   \\AtBeginEnvironment{quote}{\\small}   \\AtEndEnvironment{quote}{}"
+                    ("\\subsection*{%s}"      . "\\subsection*{%s}")
+                    ("\\subsubsection*{\\emph{%s}}"   . "\\subsubsection*{%s}")
+                    ("\\paragraph{%s}"        . "\\paragraph{%s}")))
+ #+end_src
+
+**** RapConsul
+
+     The class to make consulting report, not an academic style. Il
+     faut bien s'assurer d'avoir le .cls dans le folder.
+
+ #+name: RapConsul
+ #+begin_src emacs-lisp :tangle no :results silent
+     (add-to-list 'org-latex-classes
+                  '("RapConsul"
+                    "\\documentclass[12pt]{hitec}
+                    [NO-DEFAULT-PACKAGES]
+                    [PACKAGES]
+                    [EXTRA]
+                    \\usepackage{setspace} \\onehalfspacing
+                    \\parindent 30pt \\parskip 2ex 
+                    \\usepackage{scrextend}\\changefontsizes[14pt]{13pt}
+   \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue, citecolor= black]{hyperref}
+                    \\usepackage{mathptmx, txfonts, natbib, etoolbox}"
+                    ("\\section{%s}"       . "\\section*{%s}")
+                    ("\\subsection{%s}"    . "\\subsection*{%s}")
+                    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                    ("\\paragraph{%s}"     . "\\paragraph{%s}")))
+ #+end_src
+
+**** StandAlon
+
+     Stand alone figure at the end of file.
+
+ #+name: StandAlon
+ #+begin_src emacs-lisp :tangle no :results silent
+     (add-to-list 'org-latex-classes
+                  '("StandAlon"
+                    "\\documentclass[varwidth= \\maxdimen, border=20pt, convert={size=640x}]{standalone}
+                    [NO-DEFAULT-PACKAGES]
+                    [PACKAGES]
+                    [EXTRA]
+   \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue, citecolor= black]{hyperref}
+   \\usepackage[left= 1in, right= 1in, top= 1in, bottom= 1in]{geometry}
+                    \\parindent 20pt \\parskip 1ex
+                    \\usepackage{natbib, etoolbox, dcolumn}
+   \\AtBeginEnvironment{quote}{\\small}   \\AtEndEnvironment{quote}{}"
+                    ("\\subsection*{%s}"      . "\\subsection*{%s}")
+                    ("\\subsubsection*{\\emph{%s}}"   . "\\subsubsection*{%s}")
+                    ("\\paragraph{%s}"        . "\\paragraph{%s}")))
+ #+end_src
+
+**** TextCours
+
+     The class to produce course documents with often embedded code.
+
+ #+name: ClTextCours
+ #+begin_src emacs-lisp :tangle no :results silent
+   (add-to-list 'org-latex-classes
+		'("TextCours"
+                  "\\documentclass[12pt]{article}
+                    [NO-DEFAULT-PACKAGES]
+                    [PACKAGES]
+                    [EXTRA]
+    \\parindent 20pt \\parskip 1ex
+    \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue]{hyperref}
+    \\hypersetup{bookmarksnumbered, pdfstartview= {FitH}, citecolor= {blue},
+                 linkcolor= {red}, urlcolor= {blue}, pdfpagemode= None}
+    \\usepackage[left= 1in, right=  1in, top=  1in, bottom= 1in]{geometry}
+    \\usepackage[singlespacing]{setspace} \\usepackage[bottom]{footmisc}
+    \\usepackage[small, bf, margin=20pt]{caption}
+    \\setlength{\\belowcaptionskip}{5pt}
+    \\usepackage{fouriernc, amscd, upgreek, booktabs, listings, color}
+			\\let\\itemize\\compactitem
+                         \\let\\description\\compactdesc
+                          \\let\\enumerate\\compactenum
+     \\lstloadlanguages{R} \\definecolor{dkgreen}{rgb}{0,0.6,0}
+      \\definecolor{gray}{rgb}{0.5,0.5,0.5}
+       \\lstset{language= R, basewidth= .51em, tabsize= 2, frame= l,
+         xleftmargin= 0.5cm,  framexleftmargin=  10pt,
+         aboveskip=   0.5cm,  framextopmargin=    5pt,
+         belowskip=     0cm,  framexbottommargin= 5pt,
+         showstringspaces= false, extendedchars= true,
+       inputencoding=utf8,
+       literate={à}{{\\'a}}1 {è}{{\\`e}}1 {é}{{\\'e}}1 {ù}{{\\`u}}1
+		{ç}{{\c{c}}}1 {ï}{{i}}1 {ö}{{o}}1 {û}{{\\^u}}1,
+         commentstyle=      \\color{gray} ,
+         keywordstyle=      {\\color{dkgreen}},
+         backgroundcolor=     \\color{white},
+         basicstyle= {\\small  \\ttfamily\\bfseries},
+         stringstyle= \\ttfamily\\bfseries\\color{magenta}}"
+                    ("\\section{%s}"       . "\\section{%s}")
+                    ("\\subsection{%s}"    . "\\subsection{%s}")
+                    ("\\subsubsection{%s}" . "\\subsubsection{%s}")))
+ #+end_src
+
+**** WorkinPap
+
+     This class to produce article before being submitted for
+     publication. It refers to ManueStat for tables and figures.
+
+ #+name: ClWorkinPap
+ #+begin_src emacs-lisp :tangle no :results silent :eval yes
+   (add-to-list 'org-latex-classes
+		'("WorkinPap"
+                  "\\documentclass[12pt]{article}
+                  [NO-DEFAULT-PACKAGES]
+ \\usepackage[sf]{titlesec} \\usepackage{bm, amssymb, natbib}
+ \\parindent 20pt \\parskip 1ex
+ \\usepackage[usenames,dvipsnames]{xcolor}
+ \\usepackage[colorlinks, pdfstartview= FitH, citecolor= Fuchsia, linkcolor= red, urlcolor= blue]{hyperref}
+ \\usepackage[left= 1in, right= 1in, top= 1in, bottom= 1in]{geometry}
+                  \\usepackage{times, inconsolata, setspace}"
+                  ("\\section{%s}"       . "\\section*{%s}")
+                  ("\\subsection{%s}"    . "\\subsection*{%s}")
+                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                  ("\\paragraph{%s}"     . "\\paragraph*{%s}")
+                  ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
+ #+end_src
+
+** <<HTMLS>> HTML setup
+*** Babel formating
+
+#+begin_src emacs-lisp
+ (setq org-export-html-style
+  "<style type=\"text/css\">
+     <!--/*--><![CDATA[/*><!--*/
+       .src             { background-color: #F5FFF5; position: relative; overflow: visible; }
+       .src:before      { position: absolute; top: -15px; background: #ffffff; padding: 1px; border: 1px solid #000000; font-size: small; }
+       .src-sh:before   { content: 'sh'; }
+       .src-bash:before { content: 'sh'; }
+       .src-R:before    { content: 'R'; }
+       .src-perl:before { content: 'Perl'; }
+       .src-sql:before  { content: 'SQL'; }
+       .example         { background-color: #FFF5F5; }
+     /*]]>*/-->
+  </style>")
+#+end_src
+
+** <<EQEXP>> Equation Export
+
+ #+begin_src emacs-lisp :tangle no
+ (setq org-latex-to-mathml-convert-command
+                 "java -jar %j -unicode -force -df %o %I"
+                 org-latex-to-mathml-jar-file
+                 "/home/jsay/elisp/mathtoweb.jar")
+ #+end_src
+
+** <<PUBLH>> Publishing
