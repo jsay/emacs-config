@@ -15,9 +15,9 @@ Package manager configuration (open with `M-x list-packages`, choose with `i` an
 
 ```emacs-lisp
 (setq package-archives '(("gnu"      . "http://elpa.gnu.org/packages/")
-			 ("marmalade". "http://marmalade-repo.org/packages/")
-			 ("melpa"    . "http://melpa.org/packages/")
-			 ("org"      . "http://orgmode.org/elpa/")))
+                         ("marmalade". "http://marmalade-repo.org/packages/")
+                         ("melpa"    . "http://melpa.org/packages/")
+                         ("org"      . "http://orgmode.org/elpa/")))
 (package-initialize)
 ```
 
@@ -26,9 +26,9 @@ cyber-punk theme (melpa) / org (org) / magit (elpa) / pager (marmalade) / ess (m
 
 # Use
 
-Elisp code from this README are tangled (C-c C-v t) to "~/.emacs" to be loaded automatically.
+Elisp code of this README tangled (C-c C-v t) to "~/.emacs" and loaded automatically.
 
-Other configurations are made on `Main.org`, tangled to `init.el` and loaded as follows:
+Other configurations made on `Main.org`, tangled to `init.el` and loaded with:
 
 ```emacs-lisp
 (setq default-directory "/home/jsay/")
