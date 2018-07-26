@@ -15,6 +15,7 @@
   - Export README as md file to Github
   - see to create bercykeupon-theme.el in .emacs.d/themes/
   - Allow title and author for markdown export
+  - Skip babel blocks from org mode for spell-check.
 
 * README                                                           :noexport:
   :PROPERTIES:
@@ -44,11 +45,11 @@
 
 ** Use
 
-   Elisp code from this README are tangled (C-c C-v t) to "~/.emacs"
-   to be loaded automatically.
+   Elisp code of this README tangled (C-c C-v t) to "~/.emacs" and
+   loaded automatically.
 
-   Other configurations are made on =Main.org=, tangled to =init.el=
-   and loaded as follows:
+   Other configurations made on =Main.org=, tangled to =init.el= and
+   loaded with:
 
 #+begin_src emacs-lisp :tangle "~/.emacs"
 (setq default-directory "/home/jsay/")
@@ -87,7 +88,7 @@
 *** Font size
 
 #+begin_src emacs-lisp
-  (set-face-attribute 'default nil :height 150)
+  (set-face-attribute 'default nil :height 175)
 #+end_src
 
 *** Maximum screen size
@@ -107,7 +108,7 @@
 *** Width of buffer
 
 #+begin_src emacs-lisp
-  (setq split-width-threshold 150)
+  (setq split-width-threshold 175)
 #+end_src
 
 *** First page of emacs
@@ -139,12 +140,429 @@
 (setq uniquify-buffer-name-style 'forward)
 #+end_src
 
+** Editing
+*** Simplifications
+
+#+begin_src emacs-lisp 
+  (delete-selection-mode t)
+  (fset 'yes-or-no-p 'y-or-n-p)
+#+end_src
+
+*** Moving between pages
+
+#+begin_src emacs-lisp
+  (require 'pager)
+  (global-set-key [next]     'pager-page-down)
+  (global-set-key [prior]    'pager-page-up)
+#+end_src
+
+*** Replace strings
+
+#+begin_src emacs-lisp
+(global-unset-key "\M-r")
+(global-set-key "\M-r" 'replace-string)
+#+end_src
+
+*** Divide the screen horizontally
+
+#+begin_src emacs-lisp
+(global-set-key [f2] 'split-window-horizontally)
+#+end_src
+
+*** Shift between buffers
+
+#+begin_src emacs-lisp
+  (defvar LIMIT 1)
+  (defvar time 0)
+  (defvar mylist nil)
+  (defun time-now ()
+    (car (cdr (current-time))))
+  (defun bubble-buffer ()
+    (interactive)
+    (if (or (> (- (time-now) time) LIMIT) (null mylist))
+        (progn (setq mylist (copy-alist (buffer-list)))
+               (delq (get-buffer " *Minibuf-0*") mylist)
+               (delq (get-buffer " *Minibuf-1*") mylist)))
+    (bury-buffer (car mylist))
+    (setq mylist (cdr mylist))
+    (setq newtop (car mylist))
+    (switch-to-buffer (car mylist))
+    (setq rest (cdr (copy-alist mylist)))
+    (while rest
+      (bury-buffer (car rest))
+      (setq rest (cdr rest)))
+    (setq time (time-now)))
+  (global-set-key [f4] 'bubble-buffer)
+#+end_src
+
+*** Kill buffer
+
+#+begin_src emacs-lisp
+(defvar my-latest-killed-buffer)
+(defun my-kill-buffer()
+  "Kill current buffer without confirmation"
+  (interactive)
+  (setq my-latest-killed-buffer (buffer-file-name))
+  (kill-buffer (buffer-name))
+  (delete-window)
+)
+(defun my-unkill-buffer()
+  "Undo the latest buffer kill"
+  (interactive)
+  (find-file my-latest-killed-buffer)
+)
+(global-set-key [f5] 'my-kill-buffer)
+(global-set-key [S-f5] 'my-unkill-buffer)
+#+end_src
+
+*** Put the row numbers
+
+#+begin_src emacs-lisp
+(autoload 'linum-mode "linum"
+  "toggle line numbers on/off" t)
+(global-set-key [f11] 'linum-mode)
+(eval-after-load "linum"
+  '(set-face-attribute 'linum nil :height 150))
+#+end_src
+
+*** Move between buffers
+
+#+begin_src emacs-lisp
+(global-set-key [f12] 'other-window)
+#+end_src
+
+*** Indenting
+
+#+begin_src emacs-lisp
+(add-hook 'text-mode-hook 'turn-on-auto-fill)
+#+end_src
+
+*** Do not save files automatically
+
+#+begin_src emacs-lisp
+  (setq make-backup-files nil)
+#+end_src
+
+** Spell check
+*** General configuration
+
+    A conflict on the central button of mouse.
+
+#+begin_src emacs-lisp
+ (global-unset-key [mouse-2])
+#+end_src
+
+    hunspell is used 
+
+#+begin_src emacs-lisp
+ (setq-default ispell-program-name "hunspell")
+ (setq ispell-dictionary "american"
+       ispell-extra-args '() ;; TeX mode "-t"
+       ispell-silently-savep t)
+ (setq flyspell-mode-map nil)
+ (add-hook 'ispell-initialize-spellchecker-hook
+	   (lambda ()
+	     (setq ispell-base-dicts-override-alist
+		   '((nil ; default
+		      "[A-Za-z]" "[^A-Za-z]" "[']" t
+		      ("-d" "en_GB" "-i" "utf-8") utf-8)
+		     ("american" ; Yankee English
+		      "[A-Za-z]" "[^A-Za-z]" "[']" t
+		      ("-d" "en_US" "-i" "utf-8") nil utf-8)
+		     ("british" ; British English
+		      "[A-Za-z]" "[^A-Za-z]" "[']" t
+		      ("-d" "en_GB" "-i" "utf-8") nil utf-8)
+		     ("francais" ; Francais
+		      "[A-Za-z]" "[^A-Za-z]" "[']" t
+		      ("-d" "fr_FR" "-i" "utf-8") nil utf-8)))))
+#+end_src
+
+*** To change the language
+
+#+begin_src emacs-lisp
+   (global-set-key (kbd "C-c F")
+		(lambda() (interactive)
+                  (ispell-change-dictionary "francais")
+                  (flyspell-buffer)))
+   (global-set-key (kbd "C-c E")
+		(lambda() (interactive)
+                  (ispell-change-dictionary "english")
+                  (flyspell-buffer)))
+#+end_src
+
+*** Skip LaTeX fragments
+
+#+begin_src emacs-lisp
+ (put 'LaTeX-mode 'flyspell-mode-predicate 'auctex-mode-flyspell-skip-myenv)
+ (defun auctex-mode-flyspell-skip-myenv ()
+   (save-excursion
+     (widen)
+     (let ((p (point))
+           (count 0))
+       (not (or (and (re-search-backward "\\\\begin{\\(equation\\|align\\|equation*\\)}" nil t)
+                     (> p (point))
+                     (or (not (re-search-forward "^\\\\end{\\(equation\\|align\\|equation*\\)}" nil t))
+                         (< p (point))))
+		(eq 1 (progn (while (re-search-backward "`" (line-beginning-position) t)
+                               (setq count (1+ count)))
+                             (- count (* 2 (/ count 2)))))))))
+   )
+ (add-hook 'LaTeX-mode-hook (lambda () (setq flyspell-generic-check-word-predicate 
+                         'auctex-mode-flyspell-skip-myenv)))
+#+end_src
+
+*** Corrections in org-mode
+
+#+begin_src emacs-lisp
+ (add-hook 'org-mode-hook
+   (lambda()
+     (flyspell-mode 1)))
+ (defun my-org-switch-language ()
+     "Switch language if a `#+LANGUAGE:' Org meta-tag is on top 8 lines."
+     (save-excursion
+       (goto-line (1+ 8))
+       (let (lang
+             (dico-alist '(("nil". nil)
+			   ("fr" . "francais")
+                           ("en" . "american"))))
+         (when (re-search-backward "#\\+LANGUAGE: +\\([[:alpha:]_]*\\)" 1 t)
+           (setq lang (match-string 1))
+           (ispell-change-dictionary (cdr (assoc lang dico-alist)))))))
+   (add-hook 'org-mode-hook 'my-org-switch-language)
+#+end_src
+
+*** Skip org-mode fragments
+
+#+begin_src emacs-lisp
+ (put 'LaTeX-mode 'flyspell-mode-predicate 'auctex-mode-flyspell-skip-myenv)
+ (defun auctex-mode-flyspell-skip-myenv ()
+   (save-excursion
+     (widen)
+     (let ((p (point))
+           (count 0))
+       (not (or (and (re-search-backward "\\\\begin{\\(equation\\|align\\|equation*\\)}" nil t)
+                     (> p (point))
+                     (or (not (re-search-forward "^\\\\end{\\(equation\\|align\\|equation*\\)}" nil t))
+                         (< p (point))))
+		(eq 1 (progn (while (re-search-backward "`" (line-beginning-position) t)
+                               (setq count (1+ count)))
+                             (- count (* 2 (/ count 2)))))))))
+   )
+ (add-hook 'LaTeX-mode-hook (lambda () (setq flyspell-generic-check-word-predicate 
+                         'auctex-mode-flyspell-skip-myenv)))
+#+end_src
+
 * ORG MODE
+** General
+*** Load from org-plus-contrib
+
+#+begin_src emacs-lisp
+(require 'org-checklist)
+#+end_src
+
+*** Useless confirmations
+
+#+begin_src emacs-lisp
+(setq org-export-allow-BIND t)
+#+end_src
+
+*** Native font
+
+#+begin_src emacs-lisp
+  (setq org-src-fontify-natively t)
+#+end_src
+
+*** Final newline
+
+#+begin_src emacs-lisp
+(setq require-final-newline t)
+#+end_src
+
+** Key-bindings
+*** Initial shortcuts
+
+#+begin_src emacs-lisp
+(global-set-key "\C-cl" 'org-store-link)
+(global-set-key "\C-cc" 'org-capture)
+(global-set-key "\C-ca" 'org-agenda)
+(global-set-key "\C-cb" 'org-iswitchb)
+#+end_src
+
+*** Move between headlines
+
+#+begin_src emacs-lisp
+(global-set-key "\C-p" 'outline-previous-visible-heading)
+(global-set-key "\C-n" 'outline-next-visible-heading)
+#+end_src
+
+*** Export dispatch
+
+#+begin_src emacs-lisp
+(global-set-key (kbd "s-k") (lambda () (interactive) (org-export-dispatch "l")))
+#+end_src
+
 ** Export
 
 #+begin_src emacs-lisp
 (require 'ox-gfm)(eval-after-load "org"
   '(require 'ox-gfm nil t))
+#+end_src
+
+** Agenda
+*** Set loaded files
+
+#+begin_src emacs-lisp
+(setq org-agenda-files '("~/Main.org"))
+#+end_src
+
+*** French language
+
+#+begin_src emacs-lisp
+  (setq calendar-day-name-array
+	["Dimanche" "Lundi" "Mardi"
+	 "Mercredi" "Jeudi" "Vendredi" "Samedi"])
+  (setq calendar-month-name-array
+	["janvier" "février" "mars" "avril" "mai" "juin" "juillet"
+	 "août" "septembre" "octobre""novembre" "décembre"])
+  (setq-default system-time-locale "fr")
+#+end_src
+
+** Links
+*** Enter touch
+
+#+begin_src emacs-lisp
+(setq org-return-follows-link t)
+#+end_src
+
+*** Open with evince
+
+#+begin_src emacs-lisp
+(add-hook 'org-mode-hook
+      '(lambda ()
+         (delete '("\\.pdf\\'" . default) org-file-apps)
+         (add-to-list 'org-file-apps '("\\.pdf\\'" . "evince %s"))))
+#+end_src
+
+** Archive
+
+   Using =C-c $= to archive a selected region.
+
+#+begin_src emacs-lisp
+(setq org-loop-over-headlines-in-active-region t)
+(add-hook 'org-mode-hook 'turn-on-font-lock)
+#+end_src
+
+** Babel
+*** General
+**** Useless confirmations
+
+     To execute the code blocks directly.
+
+#+begin_src emacs-lisp
+ (setq org-confirm-babel-evaluate nil)
+#+end_src
+
+**** Used languages
+
+     Need to byte recompile =~/.emacs.d/elpa/org-20180716/ob-R.el=,
+     see [[http://irreal.org/blog/?p=4295]].
+
+#+begin_src emacs-lisp
+   (require 'ob-css)
+   (require 'ob-latex)
+   (require 'ob-R)
+   (require 'ob-sh)
+   (require 'ob-python)
+   (require 'ob-maxima)
+ (org-babel-do-load-languages
+  'org-babel-load-languages
+  '((R          . t)
+    (emacs-lisp . nil)
+    (latex      . t)
+    ))
+#+end_src
+
+**** Easy templates
+
+#+begin_src emacs-lisp
+ (eval-after-load 'org
+   '(progn
+      (add-to-list 'org-structure-template-alist
+		   '("e" "#+begin_src emacs-lisp \n?\n#+end_src\n"))
+      (add-to-list 'org-structure-template-alist
+		   '("g" "#+Name: Lst:\n#+Header: :width 7 :height 7
+#+begin_src R :results graphics :file \"Figures/?.pdf\"\n\n#+end_src\n
+#+Name: Fig:\n#+ATTR_LaTeX: :options scale= .5\n#+Caption: \n#+RESULTS: Lst:"))
+      (add-to-list 'org-structure-template-alist
+		   '("i" "#+begin_src R :results silent\n?\n#+end_src\n"))
+      (add-to-list 'org-structure-template-alist
+		   '("x" "#+begin_src R :results output exemple\n?\n#+end_src\n"))
+      (add-to-list 'org-structure-template-alist
+		   '("t" "#+begin_src R :results value exemple :rownames yes :colnames yes
+ \n#+end_src\n\n#+ATTR_LaTeX: :placement [htb]\\small\n#+Caption: ?\n#+RESULTS:"))))
+#+end_src
+
+**** Code block execution
+
+#+begin_src emacs-lisp
+ (setq org-eval-blocks-without-name
+       '(lambda() (interactive)
+          (backward-paragraph) (previous-line) (org-end-of-line)
+	  (insert " :eval yes") (org-babel-execute-src-block)
+	  (backward-kill-word 2) (org-delete-backward-char 2))
+ )
+ (global-set-key (kbd "C-c y") org-eval-blocks-without-name)
+#+end_src
+
+**** Code block export
+
+#+begin_src emacs-lisp
+ (setq org-latex-listings 'listings)
+#+end_src
+
+*** Captures
+**** Agenda
+
+#+begin_src emacs-lisp
+   (setq org-capture-templates
+	 '(("t" "Agenda"
+	    entry (file+headline  "~/Main.org" "Agenda")
+				  "* TODO %?\n\n")))
+#+end_src
+
+**** Bibliography
+
+     For the moment refile is for one headline. It could be better to
+     use =file+function=, to ask.
+    
+#+begin_src emacs-lisp
+   (add-to-list 'org-capture-templates 
+		'("b" "Biblio" entry 
+                  (file+headline "/media/HD/Biblio/Biblio.org" "Refile")
+ "*** %^{BibKey} : [[/media/HD/Biblio/citations/%\\1.bib]]\n
+    - %?\n\n   [[/media/HD/Biblio/papiers/%\\1.pdf]], le %U\n
+ #+NAME: Cite-%\\1\n#+BEGIN_SRC sh :tangle no :exports none
+     cat /media/HD/Biblio/citations/%\\1.bib\n#+END_SRC\n
+ #+begin_src bibtex :tangle ./Biblio.bib :noweb yes\n<<Cite-%\\1()>>\n#+end_src\n"))
+    (global-set-key (kbd "s-b")
+    (lambda () (interactive) (org-capture nil "b")))
+#+end_src
+
+     %\\\\n correspond à ce qui rentré dans le nième prompt
+
+**** Pour le vin
+
+     Under progress, non tanglé car cause des erreurs, peut-être dues à
+     l'absence de fichier Vin.org pour l'instant.
+
+#+begin_src emacs-lisp :tangle no
+   (add-to-list 'org-capture-templates 
+		'(("D" "Vin à Dijon"  entry (file+headline  "~/org/Vin.org" "Cave de Dijon")
+                  "%[AchatV.org]\n Entered on %U\n  %i\n  %a")
+                  ("G" "Vin Gigondas" entry (file+headline  "~/org/Vin.org" "Cave de Gigondas")
+                  "* %?\nEntered on %U\n  %i\n  %a")
+                  ("B" "Vin Bu"       entry (file+datetree+function "~/org/Vin.org" "yoyoy")
+                  "* %?\n entered on %U\n  %i\n  %a")))
 #+end_src
 
 * MAGIT
