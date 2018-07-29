@@ -96,7 +96,7 @@
 
   (setq make-backup-files nil)
 
-;(global-unset-key [mouse-2])
+(global-unset-key [mouse-2])
 
  (setq-default ispell-program-name "hunspell")
  (setq ispell-dictionary "american"
@@ -178,8 +178,6 @@
  (add-hook 'LaTeX-mode-hook (lambda () (setq flyspell-generic-check-word-predicate 
                          'auctex-mode-flyspell-skip-myenv)))
 
-(require 'org-checklist)
-
 (setq org-export-allow-BIND t)
 
   (setq org-src-fontify-natively t)
@@ -225,15 +223,17 @@
 
    (require 'ob-css)
    (require 'ob-latex)
+   (require 'ob-emacs-lisp)
    (require 'ob-R)
-   (require 'ob-sh)
+   (require 'ob-shell)
    (require 'ob-python)
    (require 'ob-maxima)
  (org-babel-do-load-languages
   'org-babel-load-languages
   '((R          . t)
-    (emacs-lisp . nil)
+    (emacs-lisp . t)
     (latex      . t)
+    (shell      . t)
     ))
 
  (eval-after-load 'org
@@ -313,7 +313,6 @@
 (setq TeX-parse-self t)
 (setq TeX-save-query nil)
 
-(list "Clean" "del %s.aux %s.log %s.out %s.toc %s.bbl %s.blg" 'TeX-run-command nil t)
 (setq TeX-PDF-mode t)
 (setq-default TeX-master t)
 (setq TeX-command-force "")
@@ -435,58 +434,492 @@
 (setq org-export-allow-bind-keywords t)
 ;(setq org-export-in-background t)
 
- (add-to-list 'org-emphasis-alist '("¤" bold))
+(defun my-latex-fixed-width-filter (fixed-width backend info)
+  (replace-regexp-in-string
+   "\\(begin\\|end\\){\\(verbatim\\)}"
+   "something" fixed-width nil nil 2))
+(add-to-list 'org-export-filter-fixed-width-functions
+	     'my-latex-fixed-width-filter)
 
-   (defun my-latex-fixed-width-filter (fixed-width backend info)
-       (replace-regexp-in-string
-	"\\(begin\\|end\\){\\(verbatim\\)}"
-	"something" fixed-width nil nil 2))
-   (add-to-list 'org-export-filter-fixed-width-functions
-		'my-latex-fixed-width-filter)
+(defun my-export-delete-headlines-tagged-noheading (backend)
+  (dolist (hl (nreverse (org-element-map 
+			    (org-element-parse-buffer 'headline)
+			    'headline
+			  'identity)))
+    (when (member "noheading" (org-element-property :tags hl))
+      (goto-char (org-element-property :begin hl))
+      (delete-region (point) (progn (forward-line) (point))))))
+(add-to-list 'org-export-before-processing-hook
+	     'my-export-delete-headlines-tagged-noheading)
+;; (defun as/delete-ignored-heading (backend)
+;;       "Remove every headline with a tag `ignoreheading' in the
+;;     current buffer. BACKEND is the export back-end being used, as
+;;     a symbol."
+;;       (org-map-entries
+;;        (lambda () (delete-region (point) (progn (forward-line) (point))))
+;;        "+ignoreheading"))
+;; AN ALTERNATIVE WITH NOHEAD
+;; (defun my-ignore-headline (contents backend info)
+;;   "Ignore headlines with tag `nohead'."
+;;   (when (and (org-export-derived-backend-p backend 'latex 'html 'ascii)
+;; 	     (string-match "\\`.*nohead.*\n"
+;; 			   (downcase contents)))
+;;     (replace-match "" nil nil contents)))
+;; (add-to-list 'org-export-filter-headline-functions 'my-ignore-headline)
 
- (defun my-export-delete-headlines-tagged-noheading (backend)
-   (dolist (hl (nreverse (org-element-map 
-			     (org-element-parse-buffer 'headline)
-			                               'headline
-			                               'identity)))
-     (when (member "noheading" (org-element-property :tags hl))
-       (goto-char (org-element-property :begin hl))
-       (delete-region (point) (progn (forward-line) (point))))))
- (add-to-list 'org-export-before-processing-hook
-	      'my-export-delete-headlines-tagged-noheading)
- ;; (defun as/delete-ignored-heading (backend)
- ;;       "Remove every headline with a tag `ignoreheading' in the
- ;;     current buffer. BACKEND is the export back-end being used, as
- ;;     a symbol."
- ;;       (org-map-entries
- ;;        (lambda () (delete-region (point) (progn (forward-line) (point))))
- ;;        "+ignoreheading"))
- ;; AN ALTERNATIVE WITH NOHEAD
- ;; (defun my-ignore-headline (contents backend info)
- ;;   "Ignore headlines with tag `nohead'."
- ;;   (when (and (org-export-derived-backend-p backend 'latex 'html 'ascii)
- ;; 	     (string-match "\\`.*nohead.*\n"
- ;; 			   (downcase contents)))
- ;;     (replace-match "" nil nil contents)))
- ;; (add-to-list 'org-export-filter-headline-functions 'my-ignore-headline)
+;; DROP THE USELESS LATEX FILES
+(list "Clean" "del %s.bbl %s.blg %s.aux %s.blg %s.out" 'org-latex-pdf-process nil t)
+;; DEFINE THE PROCESS OF COMPILATION
+(setq org-latex-pdf-process 
+      '("pdflatex %b" "bibtex %b" "pdflatex %b" "pdflatex %b" "Clean"))
+;(setq org-latex-hyperref-format "\\ref{%s}")
+(setq org-latex-toc-command
+      "\\begin{spacing}{1}\n \\tableofcontents\n\\end{spacing}\n\\clearpage")
+;; IMPORTANT FOR THE BABEL CODE BETWEEN BUFFERS
+(setq org-src-preserve-indentation t)
 
- (defun ngz-latex-filter-nobreaks (text backend info)
-   "Ensure \"_\" are properly handled in Beamer/LaTeX export."
-   (when (memq backend '(beamer latex))
-     (replace-regexp-in-string " " "~" text)))
- (add-to-list 'org-export-filter-plain-text-functions
-	      'ngz-latex-filter-nobreaks)
+(setq org-latex-packages-alist nil)
+(add-to-list 'org-latex-packages-alist '(""         "microtype"))
+(add-to-list 'org-latex-packages-alist '(""         "graphicx" ))
+(add-to-list 'org-latex-packages-alist '(""         "ragged2e" ))
+(add-to-list 'org-latex-packages-alist '(""         "booktabs" ))
+(add-to-list 'org-latex-packages-alist '("official" "eurosym"  ))
+(add-to-list 'org-latex-packages-alist '("utf8"     "inputenc" ))
+(add-to-list 'org-latex-packages-alist '(""         "paralist" )) 
+(add-to-list 'org-latex-packages-alist '(""         "amstext"  t))
+(add-to-list 'org-latex-packages-alist '(""         "amsmath"  t))
 
- ;; DROP THE USELESS LATEX FILES
- (list "Clean" "del %s.bbl %s.blg %s.aux %s.blg %s.out" 'org-latex-pdf-process nil t)
- ;; DEFINE THE PROCESS OF COMPILATION
- (setq org-latex-pdf-process 
-       '("pdflatex %b" "bibtex %b" "pdflatex %b" "pdflatex %b" "Clean"))
- ;(setq org-latex-hyperref-format "\\ref{%s}")
- (setq org-latex-toc-command
-       "\\begin{spacing}{1}\n \\tableofcontents\n\\end{spacing}\n\\clearpage")
- ;; IMPORTANT FOR THE BABEL CODE BETWEEN BUFFERS
- (setq org-src-preserve-indentation t)
+(setq org-entities-user nil)
+(add-to-list 'org-entities-user '(("space" "\\ "  nil " " " " " " " ")))
+(add-to-list 'org-entities-user '(("RLOG"  "\\texttt{\\bfseries R}" nil "R" "R" "R" "R")))
+
+   (add-to-list 'org-latex-classes
+		'("CovLetter"
+                  "\\documentclass[12pt, a4paper]{article}
+      \\usepackage{amsmath, amssymb, amsthm, amsfonts}
+      \\usepackage{graphicx, color, natbib, url, setspace}
+      \\usepackage[left=1in, right=1in, top=1in, bottom=0.75in, includefoot,
+                   headheight=13.6pt]{geometry}
+      \\usepackage[adobe-utopia]{mathdesign}
+                   [NO-PACKAGES]
+      \\parindent 20pt \\parskip 1ex
+      \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue]{hyperref}"
+                      ("\\subsubsection*{%s}"   . "\\subsubsection*{%s}")
+                      ("\\par"             . "")))
+
+(add-to-list 'org-latex-classes
+	     '("CuriVitae"
+	       "\\documentclass[12pt, a4paper]{/home/jsay/latex-config/cv2}
+                  [NO-DEFAULT-PACKAGES]
+                  \\usepackage{natbib}
+                  \\usepackage{comment, csquotes}
+                  \\usepackage[adobe-utopia]{mathdesign}
+                  \\let\\progstruct=\\texttt
+                  \\newcommand{\\progexample}[1]{{\\ttfamily\\small #1}}"
+	       ("\\titre{%s}"                 . "\\titre{%s}"    )
+	       ("\\soustitre{%s}"             . "\\soustitre{%s}" )
+	       ("\\bibentry{%s}"              . "\\bibentry{%s}")))
+
+   (add-to-list 'org-latex-classes
+		'("ManueBibt"
+                  "\\documentclass[12pt]{article}
+                  [NO-DEFAULT-PACKAGES]
+                  [PACKAGES]
+                  [EXTRA]
+ \\usepackage[sf]{titlesec} \\usepackage{natbib}
+ \\parindent 20pt \\parskip 1ex
+ %\\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue, bookmarksdepth= 1]{hyperref}
+ \\usepackage[left= 1in, right=  1in, top=  1in, bottom= 1in]{geometry}
+                  \\usepackage{ascii, mathptmx, listings, xcolor, setspace}
+                  \\let\\itemize\\compactitem
+                  \\let\\description\\compactdesc
+                  \\let\\enumerate\\compactenum
+ \\lstset{backgroundcolor= \\color[gray]{.85}, basicstyle= \\small\\ttfamily,
+          breaklines= true, keywordstyle= \\color{red!75}, columns= fullflexible}
+ \\lstdefinelanguage{bibtex}{keywords={@article, @book, @collectedbook,
+       @conference, @electronic, @ieeetranbstctl, @inbook, @incollectedbook,
+       @incollection, @injournal, @inproceedings, @manual, @mastersthesis,
+       @misc, @patent, @periodical, @phdthesis, @preamble, @proceedings, @standard,
+       @string, @techreport, @unpublished}, comment=[l][\\itshape]{@comment}, sensitive=false}"
+                  ("\\section{%s}"       . "\\section*{%s}")
+                  ("\\subsection{%s}"    . "\\subsection*{%s}")
+                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                  ("\\paragraph{%s}"     . "\\paragraph*{%s}")
+                  ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
+
+ (add-to-list 'org-latex-classes
+      '("ManueLisp"
+	"\\documentclass[12pt]{article}
+         [NO-DEFAULT-PACKAGES]
+         [PACKAGES]
+         [EXTRA]
+  \\usepackage[T1]{fontenc}
+  \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue]{hyperref}
+  \\usepackage[left= 1in, right=  1in, top=  1in, bottom= 1in]{geometry}
+  \\usepackage{fourier, ascii, listings, setspace, color, natbib}
+  \\let\\itemize\\compactitem 
+	\\let\\description\\compactdesc \\let\\enumerate\\compactenum
+  \\lstloadlanguages{Lisp} \\definecolor{gray}{rgb}{0.5,0.5,0.5}
+  \\lstset{language= Lisp, commentstyle= \\color{gray},
+           basewidth= .51em, tabsize= 2, frame= tb,
+           xleftmargin= 0.3cm, framexleftmargin=   10pt,
+           aboveskip=   0.5cm,  framextopmargin=    6pt,
+           belowskip=   0.5cm,  framexbottommargin= 6pt, 
+           firstnumber= 1, numbersep= 5pt,
+           basicstyle= {\\small  \\ttfamily\\bfseries},
+           stringstyle= \\ttfamily\\bfseries\\color{blue}, 
+           showstringspaces= false, breaklines=true,}"
+                  ("\\section{%s}"       . "\\section*{%s}")
+                  ("\\subsection{%s}"    . "\\subsection*{%s}")
+                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                  ("\\paragraph{%s}"     . "\\paragraph*{%s}")
+                  ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
+
+   (add-to-list 'org-latex-classes
+		'("ManueStat"
+                  "\\documentclass[11pt]{article}
+			[NO-DEFAULT-PACKAGES]
+    \\parindent 20pt \\parskip 1ex \\usepackage{natbib, dcolumn}
+     \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue]{hyperref}
+      \\hypersetup{bookmarksnumbered, pdfstartview= {FitH}, citecolor= {blue},
+                   linkcolor= {red}, urlcolor= {blue}, pdfpagemode= None}
+     \\usepackage[left= 1in, right= 1in, top= 1in, bottom= 1in]{geometry}
+     \\usepackage[singlespacing]{setspace} \\usepackage[bottom]{footmisc}
+     \\usepackage{dcolumn} 
+       \\setlength{\\belowcaptionskip}{5pt} \\usepackage{subcaption}
+       \\usepackage{mathpazo, amscd, upgreek, booktabs, listings, color, longtable, amssymb, bm}  
+                      \\let\\itemize\\compactitem
+                       \\let\\description\\compactdesc
+			\\let\\enumerate\\compactenum
+   \\lstloadlanguages{R} \\definecolor{storg}{rgb}{1,0.5,0}
+    \\definecolor{gray}{rgb}{0.5,0.5,0.5}
+     \\newcommand{\\indexfonction}[1]{\\index{#1@\\texttt{#1}}}
+     \\lstset{language= R, basewidth= .51em, tabsize= 2,
+       inputencoding=utf8,
+       literate={à}{{\\'a}}1 {è}{{\\`e}}1 {é}{{\\'e}}1 {ù}{{\\`u}}1
+		{ç}{{\c{c}}}1 {ï}{{i}}1 {ö}{{o}}1 {û}{{\\^u}}1,
+       xleftmargin= 0.3cm, framexleftmargin=   10pt,
+       aboveskip=   0.5cm,  framextopmargin=    6pt,
+       belowskip=   0.5cm,  framexbottommargin= 6pt,
+       showstringspaces= false, extendedchars= true,
+       commentstyle=      \\color{gray} , frame= tb,
+       keywordstyle=       \\color{storg},
+       backgroundcolor=     \\color{white},
+       basicstyle= {\\footnotesize  \\ttfamily\\bfseries},
+       stringstyle= \\ttfamily\\bfseries\\color{blue}}"
+			("\\section{%s}"       . "\\section*{%s}")
+			("\\subsection{%s}"    . "\\subsection*{%s}")
+			("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+			("\\paragraph{%s}"     . "\\paragraph*{%s}")
+			("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
+
+     (add-to-list 'org-latex-classes
+                  '("PlanCours"
+                    "\\documentclass[13pt]{article}
+                    [NO-DEFAULT-PACKAGES]
+                    [PACKAGES]
+                    [EXTRA]
+   \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue]{hyperref}
+   \\usepackage[left= 1in, right= 1in, top= 1in, bottom= 1in]{geometry}
+                    \\usepackage{fouriernc, inconsolata, natbib}"
+                    ("\\section*{%s}"      . "\\section*{%s}")
+                    ("%s ; "               . "%s ; ")))
+
+   (add-to-list 'org-latex-classes
+		'("PresPrint"
+                  "\\documentclass[bigger]{beamer}
+                   \\usepackage{/home/jsay/Org/Latex/handoutWithNotes}
+                   \\pgfpagesuselayout{3 on 1 with notes}[a4paper,border shrink=5mm]
+                  [NO-DEFAULT-PACKAGES]\\usepackage{natbib}"
+                  ("\\section*{%s}"       . "\\section*{%s}")
+                  ("\\subsection*{%s}"    . "\\subsection*{%s}")
+                  ("\\subsubsection*{%s}" . "\\subsubsection*{%s}")
+                  ("\\paragraph*{%s}"     . "\\paragraph*{%s}")
+                  ("\\subparagraph*{%s}"  . "\\subparagraph*{%s}")))
+
+   (add-to-list 'org-latex-classes
+		'("PresOther"
+                  "\\documentclass[serif, 13pt]{beamer}
+                  [NO-PACKAGES]
+                  \\setbeamercolor{alerted text}{fg= beamer@blendedblue!50}
+                  \\usepackage[T1]{fontenc}
+                  \\usepackage[style=nejm, url=false, backend=bibtex]{biblatex} 
+                  \\usepackage{ctable, graphics, epsfig, hyperref, color, url, concmath, amssymb, pifont}
+                  \\setbeamertemplate{navigation symbols}{} \\definecolor{violet}{rgb}{0.25,0,0.75}
+ \\makeatletter
+ \\ExecuteBibliographyOptions{sorting=none}
+
+ \\DeclareCiteCommand{\\notefullcite}[\\mkbibbrackets]
+   {\\usebibmacro{cite:init}%
+    \\usebibmacro{prenote}}
+   {\\usebibmacro{citeindex}%
+    \\usebibmacro{notefullcite}%
+    \\usebibmacro{cite:comp}}
+   {}
+   {\\usebibmacro{cite:dump}%
+    \\usebibmacro{postnote}}
+
+ \\newbibmacro*{notefullcite}{%
+   \\ifciteseen
+     {}
+     {\\footnotetext[\\thefield{labelnumber}]{%
+	\\usedriver{}{\\thefield{entrytype}}.}}}
+ \\DeclareCiteCommand{\\superfullcite}[\\cbx@superscript]%
+   {\\usebibmacro{cite:init}%
+    \\let\\multicitedelim=\\supercitedelim
+    \\iffieldundef{prenote}
+      {}
+      {\\BibliographyWarning{Ignoring prenote argument}}%
+    \\iffieldundef{postnote}
+      {}
+      {\\BibliographyWarning{Ignoring postnote argument}}}
+   {\\usebibmacro{citeindex}%
+    \\usebibmacro{superfullcite}%
+    \\usebibmacro{cite:comp}}
+   {}
+   {\\usebibmacro{cite:dump}}
+ \\newbibmacro*{superfullcite}{%
+   \\ifciteseen
+     {}
+     {\\xappto\\cbx@citehook{%
+	\\noexpand\\footnotetext[\\thefield{labelnumber}]{%
+          \\fullcite{\\thefield{entrykey}}.}}}}
+ \\newrobustcmd{\\cbx@superscript}[1]{%
+  \\mkbibsuperscript{#1}%
+   \\cbx@citehook
+   \\global\\let\\cbx@citehook=\\empty}
+ \\let\\cbx@citehook=\\empty"
+                  ("\\section{%s}"       . "\\section*{%s}")
+                  ("\\subsection{%s}"    . "\\subsection*{%s}")
+                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                  ("\\paragraph{%s}"     . "\\paragraph*{%s}")
+                  ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
+
+   (add-to-list 'org-latex-classes
+		'("PresSemin"
+                  "\\documentclass[serif, 14pt, aspectratio=169]{beamer}
+                  [NO-PACKAGES]
+                  \\setbeamercolor{alerted text}{fg= beamer@blendedblue!50}
+                  \\usepackage[T1]{fontenc}
+                  \\usepackage[style=nejm, url=false, backend=bibtex]{biblatex} 
+                  \\usepackage{ctable, graphics, epsfig, hyperref, color, url, concmath, amssymb, pifont}
+                  \\setbeamertemplate{navigation symbols}{} \\definecolor{violet}{rgb}{0.25,0,0.75}
+                  \\AtBeginSection[]{
+                  \\begin{frame}<beamer>
+                  \\frametitle{Outline}
+                  \\tableofcontents[currentsection]
+                  \\end{frame}}
+                  \\hypersetup{urlcolor= {blue}}
+ \\makeatletter
+ \\ExecuteBibliographyOptions{sorting=none}
+
+ \\DeclareCiteCommand{\\notefullcite}[\\mkbibbrackets]
+   {\\usebibmacro{cite:init}%
+    \\usebibmacro{prenote}}
+   {\\usebibmacro{citeindex}%
+    \\usebibmacro{notefullcite}%
+    \\usebibmacro{cite:comp}}
+   {}
+   {\\usebibmacro{cite:dump}%
+    \\usebibmacro{postnote}}
+
+ \\newbibmacro*{notefullcite}{%
+   \\ifciteseen
+     {}
+     {\\footnotetext[\\thefield{labelnumber}]{%
+	\\usedriver{}{\\thefield{entrytype}}.}}}
+ \\DeclareCiteCommand{\\superfullcite}[\\cbx@superscript]%
+   {\\usebibmacro{cite:init}%
+    \\let\\multicitedelim=\\supercitedelim
+    \\iffieldundef{prenote}
+      {}
+      {\\BibliographyWarning{Ignoring prenote argument}}%
+    \\iffieldundef{postnote}
+      {}
+      {\\BibliographyWarning{Ignoring postnote argument}}}
+   {\\usebibmacro{citeindex}%
+    \\usebibmacro{superfullcite}%
+    \\usebibmacro{cite:comp}}
+   {}
+   {\\usebibmacro{cite:dump}}
+ \\newbibmacro*{superfullcite}{%
+   \\ifciteseen
+     {}
+     {\\xappto\\cbx@citehook{%
+	\\noexpand\\footnotetext[\\thefield{labelnumber}]{%
+          \\fullcite{\\thefield{entrykey}}.}}}}
+ \\newrobustcmd{\\cbx@superscript}[1]{%
+  \\mkbibsuperscript{#1}%
+   \\cbx@citehook
+   \\global\\let\\cbx@citehook=\\empty}
+ \\let\\cbx@citehook=\\empty"
+                  ("\\section{%s}"       . "\\section*{%s}")
+                  ("\\subsection{%s}"    . "\\subsection*{%s}")
+                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                  ("\\paragraph{%s}"     . "\\paragraph*{%s}")
+                  ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
+
+   (add-to-list 'org-latex-classes
+		'("PresSeminF"
+                  "\\documentclass[serif, 14pt, aspectratio=169]{beamer}
+                  [NO-PACKAGES]
+                  \\setbeamercolor{alerted text}{fg= beamer@blendedblue!50}
+                  \\usepackage[T1]{fontenc}
+                  \\usepackage[style=nejm, url=false, backend=bibtex]{biblatex} 
+                  \\usepackage{ctable, graphics, epsfig, hyperref, color, url, concmath, amssymb, pifont}
+                  \\setbeamertemplate{navigation symbols}{} \\definecolor{violet}{rgb}{0.25,0,0.75}
+                  \\AtBeginSection[]{
+                  \\begin{frame}<beamer>
+                  \\frametitle{Plan}
+                  \\tableofcontents[currentsection]
+                  \\end{frame}}
+                  \\hypersetup{urlcolor= {blue}}
+ \\makeatletter
+ \\ExecuteBibliographyOptions{sorting=none}
+
+ \\DeclareCiteCommand{\\notefullcite}[\\mkbibbrackets]
+   {\\usebibmacro{cite:init}%
+    \\usebibmacro{prenote}}
+   {\\usebibmacro{citeindex}%
+    \\usebibmacro{notefullcite}%
+    \\usebibmacro{cite:comp}}
+   {}
+   {\\usebibmacro{cite:dump}%
+    \\usebibmacro{postnote}}
+
+ \\newbibmacro*{notefullcite}{%
+   \\ifciteseen
+     {}
+     {\\footnotetext[\\thefield{labelnumber}]{%
+	\\usedriver{}{\\thefield{entrytype}}.}}}
+ \\DeclareCiteCommand{\\superfullcite}[\\cbx@superscript]%
+   {\\usebibmacro{cite:init}%
+    \\let\\multicitedelim=\\supercitedelim
+    \\iffieldundef{prenote}
+      {}
+      {\\BibliographyWarning{Ignoring prenote argument}}%
+    \\iffieldundef{postnote}
+      {}
+      {\\BibliographyWarning{Ignoring postnote argument}}}
+   {\\usebibmacro{citeindex}%
+    \\usebibmacro{superfullcite}%
+    \\usebibmacro{cite:comp}}
+   {}
+   {\\usebibmacro{cite:dump}}
+ \\newbibmacro*{superfullcite}{%
+   \\ifciteseen
+     {}
+     {\\xappto\\cbx@citehook{%
+	\\noexpand\\footnotetext[\\thefield{labelnumber}]{%
+          \\fullcite{\\thefield{entrykey}}.}}}}
+ \\newrobustcmd{\\cbx@superscript}[1]{%
+  \\mkbibsuperscript{#1}%
+   \\cbx@citehook
+   \\global\\let\\cbx@citehook=\\empty}
+ \\let\\cbx@citehook=\\empty"
+                  ("\\section{%s}"       . "\\section*{%s}")
+                  ("\\subsection{%s}"    . "\\subsection*{%s}")
+                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                  ("\\paragraph{%s}"     . "\\paragraph*{%s}")
+                  ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
+
+     (add-to-list 'org-latex-classes
+                  '("RapRefere"
+                    "\\documentclass[12pt]{article}
+                    [NO-DEFAULT-PACKAGES]
+                    [PACKAGES]
+                    [EXTRA]
+   \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue, citecolor= black]{hyperref}
+                    \\parindent 20pt \\parskip 1ex
+                    \\usepackage{mathptmx, txfonts, natbib, etoolbox}
+   \\AtBeginEnvironment{quote}{\\small}   \\AtEndEnvironment{quote}{}"
+                    ("\\subsection*{%s}"      . "\\subsection*{%s}")
+                    ("\\subsubsection*{\\emph{%s}}"   . "\\subsubsection*{%s}")
+                    ("\\paragraph{%s}"        . "\\paragraph{%s}")))
+
+     (add-to-list 'org-latex-classes
+                  '("RapConsul"
+                    "\\documentclass[12pt]{hitec}
+                    [NO-DEFAULT-PACKAGES]
+                    [PACKAGES]
+                    [EXTRA]
+                    \\usepackage{setspace} \\onehalfspacing
+                    \\parindent 30pt \\parskip 2ex 
+                    \\usepackage{scrextend}\\changefontsizes[14pt]{13pt}
+   \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue, citecolor= black]{hyperref}
+                    \\usepackage{mathptmx, txfonts, natbib, etoolbox}"
+                    ("\\section{%s}"       . "\\section*{%s}")
+                    ("\\subsection{%s}"    . "\\subsection*{%s}")
+                    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                    ("\\paragraph{%s}"     . "\\paragraph{%s}")))
+
+     (add-to-list 'org-latex-classes
+                  '("StandAlon"
+                    "\\documentclass[varwidth= \\maxdimen, border=20pt, convert={size=640x}]{standalone}
+                    [NO-DEFAULT-PACKAGES]
+                    [PACKAGES]
+                    [EXTRA]
+   \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue, citecolor= black]{hyperref}
+   \\usepackage[left= 1in, right= 1in, top= 1in, bottom= 1in]{geometry}
+                    \\parindent 20pt \\parskip 1ex
+                    \\usepackage{natbib, etoolbox, dcolumn}
+   \\AtBeginEnvironment{quote}{\\small}   \\AtEndEnvironment{quote}{}"
+                    ("\\subsection*{%s}"      . "\\subsection*{%s}")
+                    ("\\subsubsection*{\\emph{%s}}"   . "\\subsubsection*{%s}")
+                    ("\\paragraph{%s}"        . "\\paragraph{%s}")))
+
+   (add-to-list 'org-latex-classes
+		'("TextCours"
+                  "\\documentclass[12pt]{article}
+                    [NO-DEFAULT-PACKAGES]
+                    [PACKAGES]
+                    [EXTRA]
+    \\parindent 20pt \\parskip 1ex
+    \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue]{hyperref}
+    \\hypersetup{bookmarksnumbered, pdfstartview= {FitH}, citecolor= {blue},
+                 linkcolor= {red}, urlcolor= {blue}, pdfpagemode= None}
+    \\usepackage[left= 1in, right=  1in, top=  1in, bottom= 1in]{geometry}
+    \\usepackage[singlespacing]{setspace} \\usepackage[bottom]{footmisc}
+    \\usepackage[small, bf, margin=20pt]{caption}
+    \\setlength{\\belowcaptionskip}{5pt}
+    \\usepackage{fouriernc, amscd, upgreek, booktabs, listings, color}
+			\\let\\itemize\\compactitem
+                         \\let\\description\\compactdesc
+                          \\let\\enumerate\\compactenum
+     \\lstloadlanguages{R} \\definecolor{dkgreen}{rgb}{0,0.6,0}
+      \\definecolor{gray}{rgb}{0.5,0.5,0.5}
+       \\lstset{language= R, basewidth= .51em, tabsize= 2, frame= l,
+         xleftmargin= 0.5cm,  framexleftmargin=  10pt,
+         aboveskip=   0.5cm,  framextopmargin=    5pt,
+         belowskip=     0cm,  framexbottommargin= 5pt,
+         showstringspaces= false, extendedchars= true,
+       inputencoding=utf8,
+       literate={à}{{\\'a}}1 {è}{{\\`e}}1 {é}{{\\'e}}1 {ù}{{\\`u}}1
+		{ç}{{\c{c}}}1 {ï}{{i}}1 {ö}{{o}}1 {û}{{\\^u}}1,
+         commentstyle=      \\color{gray} ,
+         keywordstyle=      {\\color{dkgreen}},
+         backgroundcolor=     \\color{white},
+         basicstyle= {\\small  \\ttfamily\\bfseries},
+         stringstyle= \\ttfamily\\bfseries\\color{magenta}}"
+                    ("\\section{%s}"       . "\\section{%s}")
+                    ("\\subsection{%s}"    . "\\subsection{%s}")
+                    ("\\subsubsection{%s}" . "\\subsubsection{%s}")))
+
+   (add-to-list 'org-latex-classes
+		'("WorkinPap"
+                  "\\documentclass[12pt]{article}
+                  [NO-DEFAULT-PACKAGES]
+ \\usepackage[sf]{titlesec} \\usepackage{bm, amssymb, natbib}
+ \\parindent 20pt \\parskip 1ex
+ \\usepackage[usenames,dvipsnames]{xcolor}
+ \\usepackage[colorlinks, pdfstartview= FitH, citecolor= Fuchsia, linkcolor= red, urlcolor= blue]{hyperref}
+ \\usepackage[left= 1in, right= 1in, top= 1in, bottom= 1in]{geometry}
+                  \\usepackage{times, inconsolata, setspace}"
+                  ("\\section{%s}"       . "\\section*{%s}")
+                  ("\\subsection{%s}"    . "\\subsection*{%s}")
+                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                  ("\\paragraph{%s}"     . "\\paragraph*{%s}")
+                  ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
 
  (setq org-export-html-style
   "<style type=\"text/css\">
@@ -501,3 +934,8 @@
        .example         { background-color: #FFF5F5; }
      /*]]>*/-->
   </style>")
+
+(setq org-html-postamble-format
+      '(("en"
+	 "<p class=\"date\">Last modification: %T </p>\n <p class=\"date\">Generated by %c </p>
+          <p class=\"date\">Css style file <a href=\"https://jsay.github.io/style.css\">here</a> (adapted from <a href=\"https://github.com/gongzhitaao/orgcss/blob/master/org.css\">orgcss</a>)</p>")))

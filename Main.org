@@ -9,11 +9,14 @@
 #+PROPERTY: header-args :tangle "init.el" :results silent
 :END:      
 
+# https://github.com/gongzhitaao/dotemacs/blob/master/init.el
+
 * Pense-bête                                 :noexport:
 
   - Group and harmonize bibliography stuff
   - see to create bercykeupon-theme.el in .emacs.d/themes/
-  - Allow title and author for markdown export
+  - Allow title and author for markdown export, need to allow title in
+    delete all .elc file in org elpa repo
   - Skip babel blocks from org mode for spell-check.
 
 * README                                     :noexport:
@@ -248,7 +251,7 @@
     A conflict on the central button of mouse.
 
 #+begin_src emacs-lisp
-;(global-unset-key [mouse-2])
+(global-unset-key [mouse-2])
 #+end_src
 
     hunspell is used 
@@ -353,12 +356,6 @@
 
 * ORG MODE
 ** General
-*** Load from org-plus-contrib
-
-#+begin_src emacs-lisp
-(require 'org-checklist)
-#+end_src
-
 *** Useless confirmations
 
 #+begin_src emacs-lisp
@@ -475,15 +472,17 @@
 #+begin_src emacs-lisp
    (require 'ob-css)
    (require 'ob-latex)
+   (require 'ob-emacs-lisp)
    (require 'ob-R)
-   (require 'ob-sh)
+   (require 'ob-shell)
    (require 'ob-python)
    (require 'ob-maxima)
  (org-babel-do-load-languages
   'org-babel-load-languages
   '((R          . t)
-    (emacs-lisp . nil)
+    (emacs-lisp . t)
     (latex      . t)
+    (shell      . t)
     ))
 #+end_src
 
@@ -638,7 +637,6 @@
 ** Compilation patterns
 
 #+begin_src emacs-lisp
-(list "Clean" "del %s.aux %s.log %s.out %s.toc %s.bbl %s.blg" 'TeX-run-command nil t)
 (setq TeX-PDF-mode t)
 (setq-default TeX-master t)
 (setq TeX-command-force "")
@@ -872,29 +870,19 @@
 ;(setq org-export-in-background t)
 #+end_src
 
-*** Emphasis
-
-    Make a particular emphasis item, shared by all backend, to put the
-    considered words in bigger font size. It is used in particular
-    for my cv. NOT WORKING
-
- #+begin_src emacs-lisp
- (add-to-list 'org-emphasis-alist '("¤" bold))
- #+end_src
-
 *** Verbatim
 
     An underused possibility is to add a filter on the =verbatim=
     environment from LaTex. It is interesting as a first exemple of
     what filter can do, no tangled but could be used in the future.
 
- #+begin_src emacs-lisp
-   (defun my-latex-fixed-width-filter (fixed-width backend info)
-       (replace-regexp-in-string
-	"\\(begin\\|end\\){\\(verbatim\\)}"
-	"something" fixed-width nil nil 2))
-   (add-to-list 'org-export-filter-fixed-width-functions
-		'my-latex-fixed-width-filter)
+#+begin_src emacs-lisp
+(defun my-latex-fixed-width-filter (fixed-width backend info)
+  (replace-regexp-in-string
+   "\\(begin\\|end\\){\\(verbatim\\)}"
+   "something" fixed-width nil nil 2))
+(add-to-list 'org-export-filter-fixed-width-functions
+	     'my-latex-fixed-width-filter)
  #+end_src
 
     Now, in the preamble of the exported file, one has to customize an
@@ -905,68 +893,53 @@
     To structure a document without this appears in the exported file,
     the tag =noheading= is useful. It is defined in the following code.
 
- #+begin_src emacs-lisp
- (defun my-export-delete-headlines-tagged-noheading (backend)
-   (dolist (hl (nreverse (org-element-map 
-			     (org-element-parse-buffer 'headline)
-			                               'headline
-			                               'identity)))
-     (when (member "noheading" (org-element-property :tags hl))
-       (goto-char (org-element-property :begin hl))
-       (delete-region (point) (progn (forward-line) (point))))))
- (add-to-list 'org-export-before-processing-hook
-	      'my-export-delete-headlines-tagged-noheading)
- ;; (defun as/delete-ignored-heading (backend)
- ;;       "Remove every headline with a tag `ignoreheading' in the
- ;;     current buffer. BACKEND is the export back-end being used, as
- ;;     a symbol."
- ;;       (org-map-entries
- ;;        (lambda () (delete-region (point) (progn (forward-line) (point))))
- ;;        "+ignoreheading"))
- ;; AN ALTERNATIVE WITH NOHEAD
- ;; (defun my-ignore-headline (contents backend info)
- ;;   "Ignore headlines with tag `nohead'."
- ;;   (when (and (org-export-derived-backend-p backend 'latex 'html 'ascii)
- ;; 	     (string-match "\\`.*nohead.*\n"
- ;; 			   (downcase contents)))
- ;;     (replace-match "" nil nil contents)))
- ;; (add-to-list 'org-export-filter-headline-functions 'my-ignore-headline)
- #+end_src
-
-*** Filter for non-breaking spaces
-
-    It is a suggestion from NGZ that put =~= at the place of all space
-    in the generated LaTeX file. I do not find it very useful but keep
-    it as an example of filter.
-
- #+name: nbsp
- #+begin_src emacs-lisp
- (defun ngz-latex-filter-nobreaks (text backend info)
-   "Ensure \"_\" are properly handled in Beamer/LaTeX export."
-   (when (memq backend '(beamer latex))
-     (replace-regexp-in-string " " "~" text)))
- (add-to-list 'org-export-filter-plain-text-functions
-	      'ngz-latex-filter-nobreaks)
- #+end_src
+#+begin_src emacs-lisp
+(defun my-export-delete-headlines-tagged-noheading (backend)
+  (dolist (hl (nreverse (org-element-map 
+			    (org-element-parse-buffer 'headline)
+			    'headline
+			  'identity)))
+    (when (member "noheading" (org-element-property :tags hl))
+      (goto-char (org-element-property :begin hl))
+      (delete-region (point) (progn (forward-line) (point))))))
+(add-to-list 'org-export-before-processing-hook
+	     'my-export-delete-headlines-tagged-noheading)
+;; (defun as/delete-ignored-heading (backend)
+;;       "Remove every headline with a tag `ignoreheading' in the
+;;     current buffer. BACKEND is the export back-end being used, as
+;;     a symbol."
+;;       (org-map-entries
+;;        (lambda () (delete-region (point) (progn (forward-line) (point))))
+;;        "+ignoreheading"))
+;; AN ALTERNATIVE WITH NOHEAD
+;; (defun my-ignore-headline (contents backend info)
+;;   "Ignore headlines with tag `nohead'."
+;;   (when (and (org-export-derived-backend-p backend 'latex 'html 'ascii)
+;; 	     (string-match "\\`.*nohead.*\n"
+;; 			   (downcase contents)))
+;;     (replace-match "" nil nil contents)))
+;; (add-to-list 'org-export-filter-headline-functions 'my-ignore-headline)
+#+end_src
 
 ** <<LATEX>> LaTeX setup
 *** <<LXGEN>> General
 **** Functioning
 
- #+begin_src emacs-lisp
- ;; DROP THE USELESS LATEX FILES
- (list "Clean" "del %s.bbl %s.blg %s.aux %s.blg %s.out" 'org-latex-pdf-process nil t)
- ;; DEFINE THE PROCESS OF COMPILATION
- (setq org-latex-pdf-process 
-       '("pdflatex %b" "bibtex %b" "pdflatex %b" "pdflatex %b" "Clean"))
- ;(setq org-latex-hyperref-format "\\ref{%s}")
- (setq org-latex-toc-command
-       "\\begin{spacing}{1}\n \\tableofcontents\n\\end{spacing}\n\\clearpage")
- ;; IMPORTANT FOR THE BABEL CODE BETWEEN BUFFERS
- (setq org-src-preserve-indentation t)
- #+end_src
+#+begin_src emacs-lisp
+;; DROP THE USELESS LATEX FILES
+(list "Clean" "del %s.bbl %s.blg %s.aux %s.blg %s.out" 'org-latex-pdf-process nil t)
+;; DEFINE THE PROCESS OF COMPILATION
+(setq org-latex-pdf-process 
+      '("pdflatex %b" "bibtex %b" "pdflatex %b" "pdflatex %b" "Clean"))
+;(setq org-latex-hyperref-format "\\ref{%s}")
+(setq org-latex-toc-command
+      "\\begin{spacing}{1}\n \\tableofcontents\n\\end{spacing}\n\\clearpage")
+;; IMPORTANT FOR THE BABEL CODE BETWEEN BUFFERS
+(setq org-src-preserve-indentation t)
+#+end_src
 
 **** Packages
+***** OLD
 
      There are two lists of LaTeX packages in the core of org-mode:
      =org-latex-default-packages-alist= and
@@ -980,17 +953,20 @@
  (setcar (rassoc '("wasysym" t) org-latex-default-packages-alist) "integrals")
  #+end_src
 
-     The second list of package reflects my preferences about a generic
-     org-mode file exported to LaTeX. The main interest of these
-     packages is to make org-mode files exchangeable. A joint interest
-     is to put here all packages that are used in custom class to limit
-     the size of this file but this is in contradiction with the other
-     goal to keep this configuration minimal to be exchangeable. The
-     third elements of =org-latex-packages-alist= is =t= for packages
-     that are needed to display LaTeX fragments in org-mode buffers.
+***** NEW
+
+      The second list of package reflects my preferences about a
+      generic org-mode file exported to LaTeX. The main interest of
+      these packages is to make org-mode files exchangeable. A joint
+      interest is to put here all packages that are used in custom
+      class to limit the size of this file but this is in
+      contradiction with the other goal to keep this configuration
+      minimal to be exchangeable. The third elements of
+      =org-latex-packages-alist= is =t= for packages that are needed
+      to display LaTeX fragments in org-mode buffers.
 
 #+name: latex-packages
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 (setq org-latex-packages-alist nil)
 (add-to-list 'org-latex-packages-alist '(""         "microtype"))
 (add-to-list 'org-latex-packages-alist '(""         "graphicx" ))
@@ -1014,30 +990,11 @@
      =org-entities= but are really difficult to remember. Hopefully, we
      can customize =org-entites-user= according to the same structure.
 
- #+begin_src emacs-lisp :tangle no
- (setq org-entities-user nil)
- (add-to-list 'org-entities-user '(("space" "\\ "  nil " " " " " " " ")))
- (add-to-list 'org-entities-user '(("RLOG"  "\\texttt{\\bfseries R}" nil "R" "R" "R" "R")))
- #+end_src
-
-**** Dispatcher menu
-
-     Before org-mode 8.0, we have to define by hands the beamer backend
-     as derived from LaTeX and put it in the dispatcher. It is now done
-     automatically by =ox-beamer=, so the following code is not tangled
-     (the names of variables is still old school).
-
- #+begin_src emacs-lisp :noweb yes :results silent :tangle no
- (org-export-define-derived-backend e-beamer e-latex
-   :export-block "BEAMER"
-   :menu-entry
-   '((?g "As PDF file (Beamer)" org-e-beamer-export-to-pdf)
-     (?G "As PDF file and open (Beamer)"
-	 (lambda (s v b)
-	   (org-open-file (org-e-beamer-export-to-pdf s v b))))))
- #+end_src
-
-     It is important to show how the dispatcher is working.
+#+begin_src emacs-lisp
+(setq org-entities-user nil)
+(add-to-list 'org-entities-user '(("space" "\\ "  nil " " " " " " " ")))
+(add-to-list 'org-entities-user '(("RLOG"  "\\texttt{\\bfseries R}" nil "R" "R" "R" "R")))
+#+end_src
 
 *** <<LXCST>> Custom classes
 **** CovLetter
@@ -1046,7 +1003,7 @@
      [[http://orgmode.org/worg/exporters/koma-letter-export.html][Koma letters]]
 
  #+name: ClCovLetter
- #+begin_src emacs-lisp :tangle no :results silent
+ #+begin_src emacs-lisp  :results silent
    (add-to-list 'org-latex-classes
 		'("CovLetter"
                   "\\documentclass[12pt, a4paper]{article}
@@ -1067,23 +1024,21 @@
      To produce the =.pdf= version of a curriculum vitae. It uses a
      custom =.cls= LaTeX file named =cv2=.
 
- #+name: ClCuriVitae
- #+begin_src emacs-lisp :tangle no :results silent
-   (add-to-list 'org-latex-classes
-		'("CuriVitae"
-	          "\\documentclass[12pt, a4paper]{/media/HD/Latex/cv2}
+#+name: ClCuriVitae
+#+begin_src emacs-lisp  :results silent
+(add-to-list 'org-latex-classes
+	     '("CuriVitae"
+	       "\\documentclass[12pt, a4paper]{/home/jsay/latex-config/cv2}
                   [NO-DEFAULT-PACKAGES]
                   \\usepackage{natbib}
-                  \\usepackage{bibentry}
-                  \\newcommand{\\bibverse}[1]{\\bibentry{#1}.\\newline}
                   \\usepackage{comment, csquotes}
                   \\usepackage[adobe-utopia]{mathdesign}
                   \\let\\progstruct=\\texttt
                   \\newcommand{\\progexample}[1]{{\\ttfamily\\small #1}}"
-	          ("\\titre{%s}"                 . "\\titre{%s}"    )
-	          ("\\soustitre{%s}"             . "\\soustitre{%s}" )
-	          ("\\bibentry{%s}"              . "\\bibentry{%s}")))
- #+end_src
+	       ("\\titre{%s}"                 . "\\titre{%s}"    )
+	       ("\\soustitre{%s}"             . "\\soustitre{%s}" )
+	       ("\\bibentry{%s}"              . "\\bibentry{%s}")))
+#+end_src
 
 **** ManueBibt
 
@@ -1094,7 +1049,7 @@
      the pdf.
 
  #+name: ClManueBibt
- #+begin_src emacs-lisp :tangle no :results silent
+ #+begin_src emacs-lisp  :results silent
    (add-to-list 'org-latex-classes
 		'("ManueBibt"
                   "\\documentclass[12pt]{article}
@@ -1129,7 +1084,7 @@
     code for my configuration of emacs.
 
  #+name: ClManueLisp
- #+begin_src emacs-lisp :tangle no :results silent
+ #+begin_src emacs-lisp  :results silent
  (add-to-list 'org-latex-classes
       '("ManueLisp"
 	"\\documentclass[12pt]{article}
@@ -1165,7 +1120,7 @@
      software.
 
  #+name: ClManueStat
- #+begin_src emacs-lisp :tangle no :results silent
+ #+begin_src emacs-lisp  :results silent
    (add-to-list 'org-latex-classes
 		'("ManueStat"
                   "\\documentclass[11pt]{article}
@@ -1210,7 +1165,7 @@
      The class to produce course syllabus.
 
  #+name: ClPlanCours
- #+begin_src emacs-lisp :tangle no :results silent
+ #+begin_src emacs-lisp  :results silent
      (add-to-list 'org-latex-classes
                   '("PlanCours"
                     "\\documentclass[13pt]{article}
@@ -1230,7 +1185,7 @@
      printed version.
 
  #+name: ClPresPrint
- #+begin_src emacs-lisp :tangle no :results silent
+ #+begin_src emacs-lisp  :results silent
    (add-to-list 'org-latex-classes
 		'("PresPrint"
                   "\\documentclass[bigger]{beamer}
@@ -1247,7 +1202,7 @@
 **** PresOther
 
  #+name: ClPlanCours
- #+begin_src emacs-lisp :tangle no :results silent
+ #+begin_src emacs-lisp  :results silent
    (add-to-list 'org-latex-classes
 		'("PresOther"
                   "\\documentclass[serif, 13pt]{beamer}
@@ -1312,7 +1267,7 @@
      A classical beamer class to present into seminaries and workshops.
 
  #+name: ClPlanCours
- #+begin_src emacs-lisp :tangle no :results silent
+ #+begin_src emacs-lisp  :results silent
    (add-to-list 'org-latex-classes
 		'("PresSemin"
                   "\\documentclass[serif, 14pt, aspectratio=169]{beamer}
@@ -1383,7 +1338,7 @@
      A classical beamer class to present into seminaries and workshops.
 
  #+name: ClPlanCours
- #+begin_src emacs-lisp :tangle no :results silent
+ #+begin_src emacs-lisp  :results silent
    (add-to-list 'org-latex-classes
 		'("PresSeminF"
                   "\\documentclass[serif, 14pt, aspectratio=169]{beamer}
@@ -1455,7 +1410,7 @@
      =.pdf= is not a good format.
 
  #+name: RapRefere
- #+begin_src emacs-lisp :tangle no :results silent
+ #+begin_src emacs-lisp  :results silent
      (add-to-list 'org-latex-classes
                   '("RapRefere"
                     "\\documentclass[12pt]{article}
@@ -1477,7 +1432,7 @@
      faut bien s'assurer d'avoir le .cls dans le folder.
 
  #+name: RapConsul
- #+begin_src emacs-lisp :tangle no :results silent
+ #+begin_src emacs-lisp  :results silent
      (add-to-list 'org-latex-classes
                   '("RapConsul"
                     "\\documentclass[12pt]{hitec}
@@ -1500,7 +1455,7 @@
      Stand alone figure at the end of file.
 
  #+name: StandAlon
- #+begin_src emacs-lisp :tangle no :results silent
+ #+begin_src emacs-lisp  :results silent
      (add-to-list 'org-latex-classes
                   '("StandAlon"
                     "\\documentclass[varwidth= \\maxdimen, border=20pt, convert={size=640x}]{standalone}
@@ -1522,7 +1477,7 @@
      The class to produce course documents with often embedded code.
 
  #+name: ClTextCours
- #+begin_src emacs-lisp :tangle no :results silent
+ #+begin_src emacs-lisp  :results silent
    (add-to-list 'org-latex-classes
 		'("TextCours"
                   "\\documentclass[12pt]{article}
@@ -1567,7 +1522,7 @@
      publication. It refers to ManueStat for tables and figures.
 
  #+name: ClWorkinPap
- #+begin_src emacs-lisp :tangle no :results silent :eval yes
+ #+begin_src emacs-lisp :results silent :eval yes
    (add-to-list 'org-latex-classes
 		'("WorkinPap"
                   "\\documentclass[12pt]{article}
@@ -1586,7 +1541,7 @@
  #+end_src
 
 ** <<HTMLS>> HTML setup
-*** Babel formating
+*** Babel format
 
 #+begin_src emacs-lisp
  (setq org-export-html-style
@@ -1604,6 +1559,15 @@
   </style>")
 #+end_src
 
+*** Postamble format
+
+#+begin_src emacs-lisp
+(setq org-html-postamble-format
+      '(("en"
+	 "<p class=\"date\">Last modification: %T </p>\n <p class=\"date\">Generated by %c </p>
+          <p class=\"date\">Css style file <a href=\"https://jsay.github.io/style.css\">here</a> (adapted from <a href=\"https://github.com/gongzhitaao/orgcss/blob/master/org.css\">orgcss</a>)</p>")))
+#+end_src
+
 ** <<EQEXP>> Equation Export
 
  #+begin_src emacs-lisp :tangle no
@@ -1613,4 +1577,3 @@
                  "/home/jsay/elisp/mathtoweb.jar")
  #+end_src
 
-** <<PUBLH>> Publishing
