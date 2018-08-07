@@ -34,6 +34,14 @@
 (require 'uniquify)
 (setq uniquify-buffer-name-style 'forward)
 
+(setq ring-bell-function
+      (lambda ()
+        (let ((orig-fg (face-foreground 'mode-line)))
+          (set-face-foreground 'mode-line "#F2804F")
+          (run-with-idle-timer 0.1 nil
+                               (lambda (fg) (set-face-foreground 'mode-line fg))
+                               orig-fg))))
+
   (delete-selection-mode t)
   (fset 'yes-or-no-p 'y-or-n-p)
 
@@ -262,21 +270,21 @@
 
  (setq org-latex-listings 'listings)
 
-   (setq org-capture-templates
-	 '(("t" "Agenda"
-	    entry (file+headline  "~/Main.org" "AGENDA")
-				  "* TODO %?\n\n")))
+(setq org-capture-templates
+      '(("t" "Agenda"
+	 entry (file+headline  "~/Main.org" "AGENDA")
+	 "* TODO %?\n\n")))
 
-   (add-to-list 'org-capture-templates 
-		'("b" "Biblio" entry 
-                  (file+headline "/media/HD/Biblio/Biblio.org" "Refile")
- "*** %^{BibKey} : [[/media/HD/Biblio/citations/%\\1.bib]]\n
+(add-to-list 'org-capture-templates 
+	     '("b" "Biblio" entry 
+	       (file+headline "/media/HD/Biblio/Biblio.org" "Refile")
+	       "*** %^{BibKey} : [[/media/HD/Biblio/citations/%\\1.bib]]\n
     - %?\n\n   [[/media/HD/Biblio/papiers/%\\1.pdf]], le %U\n
  #+NAME: Cite-%\\1\n#+BEGIN_SRC sh :tangle no :exports none
      cat /media/HD/Biblio/citations/%\\1.bib\n#+END_SRC\n
  #+begin_src bibtex :tangle ./Biblio.bib :noweb yes\n<<Cite-%\\1()>>\n#+end_src\n"))
-    (global-set-key (kbd "s-b")
-    (lambda () (interactive) (org-capture nil "b")))
+(global-set-key (kbd "s-b")
+		(lambda () (interactive) (org-capture nil "b")))
 
 (setq-default inferior-R-args "--no-restore-history --no-save")
 (add-hook 'ess-R-post-run-hook
@@ -968,8 +976,7 @@
    user-mail-address "jsay.site@gmail.com"
    user-full-name  "Jean-Sauveur Ay"
    mu4e-compose-signature
-    (concat
-      "Jean-Sauveur\n"))
+    (concat "Jean-Sauveur\n"))
 
 ;; sending mail -- replace USERNAME with your gmail username
 ;; also, make sure the gnutls command line utils are installed
@@ -987,3 +994,10 @@
 
 ;; don't keep message buffers around
 (setq message-kill-buffer-on-exit t)
+
+(require 'org-mu4e)
+(setq org-mu4e-link-query-in-headers-mode nil)
+(add-to-list 'org-capture-templates 
+	     '("m" "Mail" entry 
+	       (file+headline "Main.org" "MESSAGERIE")
+	       "** TODO [#A] %?\nSCHEDULED: %(org-insert-time-stamp (org-read-date nil t \"+0d\"))\n%a\n"))

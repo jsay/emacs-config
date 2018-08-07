@@ -80,7 +80,7 @@
 (load-library "iso-transl")
 #+end_src
 
-** Apparency
+** Display
 *** Theme
 
     Some manual modifications in "/.emacs.d/themes/cyberpunk-theme.el"
@@ -116,7 +116,7 @@
   (setq split-width-threshold 175)
 #+end_src
 
-*** First page of emacs
+*** First page of Emacs
 
 #+begin_src emacs-lisp
   (setq inhibit-startup-message t)
@@ -143,6 +143,18 @@
 #+begin_src emacs-lisp
 (require 'uniquify)
 (setq uniquify-buffer-name-style 'forward)
+#+end_src
+
+*** Alarm Bell
+
+#+begin_src emacs-lisp
+(setq ring-bell-function
+      (lambda ()
+        (let ((orig-fg (face-foreground 'mode-line)))
+          (set-face-foreground 'mode-line "#F2804F")
+          (run-with-idle-timer 0.1 nil
+                               (lambda (fg) (set-face-foreground 'mode-line fg))
+                               orig-fg))))
 #+end_src
 
 ** Editing
@@ -531,10 +543,10 @@
 **** Agenda
 
 #+begin_src emacs-lisp
-   (setq org-capture-templates
-	 '(("t" "Agenda"
-	    entry (file+headline  "~/Main.org" "AGENDA")
-				  "* TODO %?\n\n")))
+(setq org-capture-templates
+      '(("t" "Agenda"
+	 entry (file+headline  "~/Main.org" "AGENDA")
+	 "* TODO %?\n\n")))
 #+end_src
 
 **** Bibliography
@@ -543,16 +555,16 @@
      use =file+function=, to ask.
     
 #+begin_src emacs-lisp
-   (add-to-list 'org-capture-templates 
-		'("b" "Biblio" entry 
-                  (file+headline "/media/HD/Biblio/Biblio.org" "Refile")
- "*** %^{BibKey} : [[/media/HD/Biblio/citations/%\\1.bib]]\n
+(add-to-list 'org-capture-templates 
+	     '("b" "Biblio" entry 
+	       (file+headline "/media/HD/Biblio/Biblio.org" "Refile")
+	       "*** %^{BibKey} : [[/media/HD/Biblio/citations/%\\1.bib]]\n
     - %?\n\n   [[/media/HD/Biblio/papiers/%\\1.pdf]], le %U\n
- #+NAME: Cite-%\\1\n#+BEGIN_SRC sh :tangle no :exports none
+ ,#+NAME: Cite-%\\1\n#+BEGIN_SRC sh :tangle no :exports none
      cat /media/HD/Biblio/citations/%\\1.bib\n#+END_SRC\n
- #+begin_src bibtex :tangle ./Biblio.bib :noweb yes\n<<Cite-%\\1()>>\n#+end_src\n"))
-    (global-set-key (kbd "s-b")
-    (lambda () (interactive) (org-capture nil "b")))
+ ,#+begin_src bibtex :tangle ./Biblio.bib :noweb yes\n<<Cite-%\\1()>>\n#+end_src\n"))
+(global-set-key (kbd "s-b")
+		(lambda () (interactive) (org-capture nil "b")))
 #+end_src
 
      %\\\\n correspond à ce qui rentré dans le nième prompt
@@ -563,13 +575,13 @@
      l'absence de fichier Vin.org pour l'instant.
 
 #+begin_src emacs-lisp :tangle no
-   (add-to-list 'org-capture-templates 
-		'(("D" "Vin à Dijon"  entry (file+headline  "~/org/Vin.org" "Cave de Dijon")
-                  "%[AchatV.org]\n Entered on %U\n  %i\n  %a")
-                  ("G" "Vin Gigondas" entry (file+headline  "~/org/Vin.org" "Cave de Gigondas")
-                  "* %?\nEntered on %U\n  %i\n  %a")
-                  ("B" "Vin Bu"       entry (file+datetree+function "~/org/Vin.org" "yoyoy")
-                  "* %?\n entered on %U\n  %i\n  %a")))
+(add-to-list 'org-capture-templates 
+	     '(("D" "Vin à Dijon"  entry (file+headline  "~/org/Vin.org" "Cave de Dijon")
+		"%[AchatV.org]\n Entered on %U\n  %i\n  %a")
+	       ("G" "Vin Gigondas" entry (file+headline  "~/org/Vin.org" "Cave de Gigondas")
+		"* %?\nEntered on %U\n  %i\n  %a")
+	       ("B" "Vin Bu"       entry (file+datetree+function "~/org/Vin.org" "yoyoy")
+		"* %?\n entered on %U\n  %i\n  %a")))
 #+end_src
 
 * ESS
@@ -1637,8 +1649,7 @@ sudo make install
    user-mail-address "jsay.site@gmail.com"
    user-full-name  "Jean-Sauveur Ay"
    mu4e-compose-signature
-    (concat
-      "Jean-Sauveur\n"))
+    (concat "Jean-Sauveur\n"))
 
 ;; sending mail -- replace USERNAME with your gmail username
 ;; also, make sure the gnutls command line utils are installed
@@ -1656,5 +1667,16 @@ sudo make install
 
 ;; don't keep message buffers around
 (setq message-kill-buffer-on-exit t)
+#+end_src
+
+** Interaction with org
+
+#+begin_src emacs-lisp
+(require 'org-mu4e)
+(setq org-mu4e-link-query-in-headers-mode nil)
+(add-to-list 'org-capture-templates 
+	     '("m" "Mail" entry 
+	       (file+headline "Main.org" "MESSAGERIE")
+	       "** TODO [#A] %?\nSCHEDULED: %(org-insert-time-stamp (org-read-date nil t \"+0d\"))\n%a\n"))
 #+end_src
 
