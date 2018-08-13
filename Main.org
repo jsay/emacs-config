@@ -212,6 +212,12 @@
   (global-set-key [f4] 'bubble-buffer)
 #+end_src
 
+*** Buffer menu
+
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-x C-b") 'buffer-menu-other-window)
+#+end_src
+
 *** Kill buffer
 
 #+begin_src emacs-lisp

@@ -76,6 +76,8 @@
     (setq time (time-now)))
   (global-set-key [f4] 'bubble-buffer)
 
+(global-set-key (kbd "C-x C-b") 'buffer-menu-other-window)
+
 (defvar my-latest-killed-buffer)
 (defun my-kill-buffer()
   "Kill current buffer without confirmation"
