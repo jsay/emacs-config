@@ -50,8 +50,8 @@
 
 ** Use
 
-   Elisp code of this README tangled (C-c C-v t) to "~/.emacs" and
-   loaded automatically.
+   Elisp code of this README file tangled (C-c C-v t) to "~/.emacs"
+   and loaded automatically.
 
    Other configurations made on =Main.org=, tangled to =init.el= and
    loaded with:

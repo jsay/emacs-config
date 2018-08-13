@@ -6,7 +6,7 @@
 
 ## Softwares (`sudo apt install`)
 
-emacs / hunspell / r-base / texlive-file
+emacs / hunspell / r-base / texlive-file / libgmime-2.6-dev / libxapian-dev / offlineimap / libssl-dev / libcurl4-openssl-dev / libxml2-dev
 
 
 ## Packages  (`package-install`)
@@ -21,12 +21,12 @@ Package manager configuration (open with `M-x list-packages`, choose with `i` an
 (package-initialize)
 ```
 
-cyber-punk theme (melpa) / org (org) / magit (elpa) / pager (marmalade) / ess (melpa) / auctex (gnu) / ox-gfm (melpa)
+cyber-punk theme (melpa) / org (org) / magit (elpa) / pager (marmalade) / ess (melpa) / auctex (gnu) / ox-gfm (melpa) / magithub (melpa)
 
 
 # Use
 
-Elisp code of this README tangled (C-c C-v t) to "~/.emacs" and loaded automatically.
+Elisp code of this README file tangled (C-c C-v t) to "~/.emacs" and loaded automatically.
 
 Other configurations made on `Main.org`, tangled to `init.el` and loaded with:
 
