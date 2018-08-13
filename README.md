@@ -1,12 +1,14 @@
 # Emacs configuration for Ubuntu 18.4.
 
+Code is in `Main.org` file, other files are generated (tangled) from this main file.
+
 
 # Dependencies
 
 
 ## Softwares (`sudo apt install`)
 
-emacs / hunspell / r-base / texlive-file / libgmime-2.6-dev / libxapian-dev / offlineimap / libssl-dev / libcurl4-openssl-dev / libxml2-dev
+emacs / hunspell / r-base / texlive-file / libgmime-2.6-dev / libxapian-dev / mu (from github) / offlineimap / libssl-dev / libcurl4-openssl-dev / libxml2-dev
 
 
 ## Packages  (`package-install`)
