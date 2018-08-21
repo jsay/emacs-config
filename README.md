@@ -1,6 +1,6 @@
 # Emacs configuration for Ubuntu 18.4.
 
-Code is in `Main.org` file, other files are generated (tangled) from this main file.
+Codes are in `Main.org`, other files are generated (tangled) from this main file.
 
 
 # Dependencies
