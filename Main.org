@@ -54,17 +54,17 @@
 
 ** Use
 
-   Elisp code of this README file -- about package manager, default
-   directory, loaded libraries -- tangled (C-c C-v t) to =~/.emacs=
-   and loaded automatically with emacs.
-
-   Other configurations made on =Main.org=, tangled to =init.el= and
-   loaded with:
+   Emacs configurations from =Main.org= tangled (C-c C-v t) to
+   =init.el= and loaded with:
 
 #+begin_src emacs-lisp :tangle "~/.emacs"
 (setq default-directory "/home/jsay/")
 (load-library "~/emacs-config/init.el")
 #+end_src
+
+   Elisp code of this README file -- about package manager, default
+   directory, loaded libraries -- tangled to =~/.emacs= and loaded
+   automatically with emacs.
 
 * GENERAL
 ** Encoding
