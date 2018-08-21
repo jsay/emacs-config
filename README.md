@@ -1,6 +1,6 @@
 # Emacs configuration for Ubuntu 18.4.
 
-Codes are in `Main.org`, other files are generated (tangled) from this main file.
+Codes are in `Main.org` (with comments) other files are generated (tangled) from this main file.
 
 
 # Dependencies
@@ -28,7 +28,7 @@ cyber-punk theme (melpa) / org (org) / magit (elpa) / pager (marmalade) / ess (m
 
 # Use
 
-Elisp code of this README file tangled (C-c C-v t) to "~/.emacs" and loaded automatically.
+Elisp code of this README file &#x2013; about package manager, default directory, loaded libraries &#x2013; tangled (C-c C-v t) to `~/.emacs` and loaded automatically with emacs.
 
 Other configurations made on `Main.org`, tangled to `init.el` and loaded with:
 
