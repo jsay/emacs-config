@@ -939,11 +939,12 @@
 (require 'mu4e)
 
 (setq mail-user-agent 'mu4e-user-agent)
+(setq mu4e-get-mail-command "offlineimap")
+(setq message-kill-buffer-on-exit t)
 
 (setq mu4e-maildir "/home/jsay/Maildir")
-
 (setq mu4e-drafts-folder "/[Gmail].Brouillons")
-(setq mu4e-sent-folder   "/[Gmail].Messages envoyés")
+(setq mu4e-sent-folder   "/[Gmail].Envois")
 (setq mu4e-trash-folder  "/[Gmail].Corbeille")
 (setq mu4e-refile-folder  "/Archives")
 
@@ -954,10 +955,9 @@
 ;; additional non-Gmail addresses and want assign them different
 ;; behavior.)
 
-;; setup some handy shortcuts
-;; you can quickly switch to your Inbox -- press ``ji''
-;; then, when you want archive some messages, move them to
-;; the 'All Mail' folder by pressing ``ma''.
+;; setup some handy shortcuts you can quickly switch to your Inbox --
+;; press ``ji'' then, when you want archive some messages, move them
+;; to the 'All Mail' folder by pressing ``ma''.
 
 (setq mu4e-maildir-shortcuts
     '( ("/INBOX"               . ?i)
@@ -965,19 +965,12 @@
        ("/[Gmail].Trash"       . ?t)
        ("/[Gmail].All Mail"    . ?a)))
 
-;; allow for updating mail using 'U' in the main view:
-(setq mu4e-get-mail-command "offlineimap")
-
 ;; something about ourselves
 (setq
    user-mail-address "jsay.site@gmail.com"
-   user-full-name  "Jean-Sauveur Ay"
+   user-full-name    "Jean-Sauveur Ay"
    mu4e-compose-signature
     (concat "Jean-Sauveur\n"))
-
-;; sending mail -- replace USERNAME with your gmail username
-;; also, make sure the gnutls command line utils are installed
-;; package 'gnutls-bin' in Debian/Ubuntu
 
 (require 'smtpmail)
 (setq message-send-mail-function 'smtpmail-send-it
@@ -988,9 +981,6 @@
    smtpmail-default-smtp-server "smtp.gmail.com"
    smtpmail-smtp-server "smtp.gmail.com"
    smtpmail-smtp-service 587)
-
-;; don't keep message buffers around
-(setq message-kill-buffer-on-exit t)
 
 (require 'org-mu4e)
 (setq org-mu4e-link-query-in-headers-mode nil)

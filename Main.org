@@ -33,7 +33,8 @@
 
     emacs / hunspell / r-base / texlive-file / libgmime-2.6-dev /
     libxapian-dev / mu (from github) / offlineimap / libssl-dev /
-    libcurl4-openssl-dev / libxml2-dev / libgdal-dev
+    libcurl4-openssl-dev / libxml2-dev / libgdal-dev / gnutls-bin /
+    gnupg2
 
 *** Packages  (=package-install=)
 
@@ -1581,7 +1582,7 @@
   </style>")
 #+end_src
 
-* MAIL READER
+* MU4E
 ** Getting Mu
 
 #+BEGIN_SRC shell :tangle no
@@ -1600,19 +1601,30 @@ sudo make install
 (require 'mu4e)
 #+end_src
 
+** Offlineimap
+
+   [[~/.offlineimaprc]]
+
+   Encrypting the password (http://f-koehler.github.io/posts/2015-03-17-offlineimap-msmtp-gnupg.html)
+
+   jeanso (4offlineimap) <jsay.site@gmail.com> Fugain Kids united
+
 ** For gmail
 
    Make sure that IMAP is activated, as
    https://myaccount.google.com/lesssecureapps for offlineimap (the
    configuration file is =~/.offlineimaprc=)
 
+*** General
+
 #+begin_src emacs-lisp
 (setq mail-user-agent 'mu4e-user-agent)
+(setq mu4e-get-mail-command "offlineimap")
+(setq message-kill-buffer-on-exit t)
 
 (setq mu4e-maildir "/home/jsay/Maildir")
-
 (setq mu4e-drafts-folder "/[Gmail].Brouillons")
-(setq mu4e-sent-folder   "/[Gmail].Messages envoyés")
+(setq mu4e-sent-folder   "/[Gmail].Envois")
 (setq mu4e-trash-folder  "/[Gmail].Corbeille")
 (setq mu4e-refile-folder  "/Archives")
 
@@ -1623,10 +1635,9 @@ sudo make install
 ;; additional non-Gmail addresses and want assign them different
 ;; behavior.)
 
-;; setup some handy shortcuts
-;; you can quickly switch to your Inbox -- press ``ji''
-;; then, when you want archive some messages, move them to
-;; the 'All Mail' folder by pressing ``ma''.
+;; setup some handy shortcuts you can quickly switch to your Inbox --
+;; press ``ji'' then, when you want archive some messages, move them
+;; to the 'All Mail' folder by pressing ``ma''.
 
 (setq mu4e-maildir-shortcuts
     '( ("/INBOX"               . ?i)
@@ -1634,19 +1645,12 @@ sudo make install
        ("/[Gmail].Trash"       . ?t)
        ("/[Gmail].All Mail"    . ?a)))
 
-;; allow for updating mail using 'U' in the main view:
-(setq mu4e-get-mail-command "offlineimap")
-
 ;; something about ourselves
 (setq
    user-mail-address "jsay.site@gmail.com"
-   user-full-name  "Jean-Sauveur Ay"
+   user-full-name    "Jean-Sauveur Ay"
    mu4e-compose-signature
     (concat "Jean-Sauveur\n"))
-
-;; sending mail -- replace USERNAME with your gmail username
-;; also, make sure the gnutls command line utils are installed
-;; package 'gnutls-bin' in Debian/Ubuntu
 
 (require 'smtpmail)
 (setq message-send-mail-function 'smtpmail-send-it
@@ -1658,9 +1662,39 @@ sudo make install
    smtpmail-smtp-server "smtp.gmail.com"
    smtpmail-smtp-service 587)
 
-;; don't keep message buffers around
-(setq message-kill-buffer-on-exit t)
 #+end_src
+
+*** Contexts
+*** Archive
+
+#+begin_src emacs-lisp :tangle no
+(defun my-mu4e-refile-folder-function (msg)
+  "Set the refile folder for MSG."
+  (let ((maildir (mu4e-message-field msg :maildir))
+        (subject (mu4e-message-field msg :subject))
+        folder)
+    (cond
+     ((string-match "Account1" maildir)
+      (setq folder (or (catch 'found
+                         (dolist (mailing-list my-mu4e-mailing-lists)
+                           (if (mu4e-message-contact-field-matches
+                             msg :to (car mailing-list))
+                               (throw 'found (cdr mailing-list)))))
+                       "/Account1/General")))
+     ((string-match "Gmail" maildir)
+      (setq folder "/Gmail/All Mail"))
+     ((string-match "Account2" maildir)
+      (setq folder (or (cdar (member* subject my-mu4e-subject-alist
+                                      :test #'(lambda (x y)
+                                                (string-match
+                                                   (car y) x))))
+                       "/Account2/General"))))
+    folder))
+(setq mu4e-refile-folder 'my-mu4e-refile-folder-function)
+#+end_src
+
+
+
 
 ** Interaction with org
 
