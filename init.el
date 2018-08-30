@@ -961,6 +961,7 @@
 
 (setq mu4e-maildir-shortcuts
     '( ("/INBOX"               . ?i)
+       ("/SciencesPo/INBOX"    . ?I)
        ("/[Gmail].Sent Mail"   . ?s)
        ("/[Gmail].Trash"       . ?t)
        ("/[Gmail].All Mail"    . ?a)))
@@ -981,6 +982,35 @@
    smtpmail-default-smtp-server "smtp.gmail.com"
    smtpmail-smtp-server "smtp.gmail.com"
    smtpmail-smtp-service 587)
+
+(setq mu4e-contexts
+    `( ,(make-mu4e-context
+          :name "Code"
+          :enter-func (lambda () (mu4e-message "Entering jsay.site context"))
+          :leave-func (lambda () (mu4e-message "Leaving jsay.site context"))
+          :match-func (lambda (msg)
+                        (when msg 
+                          (mu4e-message-contact-field-matches msg 
+                            :to "jsay.site@gmail.com")))
+          :vars '( ( user-mail-address      . "jsay.site@gmail.com"  )
+                   ( user-full-name         . "Jean-Sauveur Ay" )
+                   ( mu4e-compose-signature .
+                     (concat
+                       "Jean-Sauveur Ay\n"
+                       "INRA, UMR CESAER DIJON\n"))))
+       ,(make-mu4e-context
+          :name "SciencesPo"
+          :enter-func (lambda () (mu4e-message "Switch to SciencesPo context"))
+          :match-func (lambda (msg)
+                        (when msg
+                          (string-match-p "^/SciencesPo" (mu4e-message-field msg :maildir))))
+          :vars '( ( user-mail-address       . "jeansauveur.ay@sciencespo.fr" )
+                   ( user-full-name          . "Jean-Sauveur Ay" )
+                   ( mu4e-compose-signature  .
+                     (concat
+                       "Jean-Sauveur\n"))))))
+(setq mu4e-context-policy 'Code)
+(setq mu4e-compose-context-policy nil)
 
 (require 'org-mu4e)
 (setq org-mu4e-link-query-in-headers-mode nil)
