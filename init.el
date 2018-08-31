@@ -109,7 +109,7 @@
 (global-unset-key [mouse-2])
 
  (setq-default ispell-program-name "hunspell")
- (setq ispell-dictionary "american"
+ (setq ispell-dictionary "francais"
        ispell-extra-args '() ;; TeX mode "-t"
        ispell-silently-savep t)
  (setq flyspell-mode-map nil)
@@ -118,16 +118,13 @@
 	     (setq ispell-base-dicts-override-alist
 		   '((nil ; default
 		      "[A-Za-z]" "[^A-Za-z]" "[']" t
-		      ("-d" "en_GB" "-i" "utf-8") utf-8)
-		     ("american" ; Yankee English
+		      ("-d" "fr_FR" "-i" "utf-8") utf-8)
+		     ("american"
 		      "[A-Za-z]" "[^A-Za-z]" "[']" t
 		      ("-d" "en_US" "-i" "utf-8") nil utf-8)
 		     ("british" ; British English
 		      "[A-Za-z]" "[^A-Za-z]" "[']" t
-		      ("-d" "en_GB" "-i" "utf-8") nil utf-8)
-		     ("francais" ; Francais
-		      "[A-Za-z]" "[^A-Za-z]" "[']" t
-		      ("-d" "fr_FR" "-i" "utf-8") nil utf-8)))))
+		      ("-d" "en_GB" "-i" "utf-8") nil utf-8)))))
 
    (global-set-key (kbd "C-c F")
 		(lambda() (interactive)
@@ -187,6 +184,8 @@
    )
  (add-hook 'LaTeX-mode-hook (lambda () (setq flyspell-generic-check-word-predicate 
                          'auctex-mode-flyspell-skip-myenv)))
+
+(put 'dired-find-alternate-file 'disabled nil)
 
 (setq org-export-allow-BIND t)
 
@@ -938,40 +937,44 @@
 (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
 (require 'mu4e)
 
-(setq mail-user-agent 'mu4e-user-agent)
-(setq mu4e-get-mail-command "offlineimap")
-(setq message-kill-buffer-on-exit t)
-
-(setq mu4e-maildir "/home/jsay/Maildir")
-(setq mu4e-drafts-folder "/[Gmail].Brouillons")
-(setq mu4e-sent-folder   "/[Gmail].Envois")
-(setq mu4e-trash-folder  "/[Gmail].Corbeille")
-(setq mu4e-refile-folder  "/Archives")
-
-;; don't save message to Sent Messages, Gmail/IMAP takes care of this
 (setq mu4e-sent-messages-behavior 'delete)
 
-;; (See the documentation for `mu4e-sent-messages-behavior' if you have
-;; additional non-Gmail addresses and want assign them different
-;; behavior.)
+(setq mail-user-agent 'mu4e-user-agent
+      mu4e-get-mail-command "offlineimap"
+      message-kill-buffer-on-exit t
+      mu4e-confirm-quit nil
+      mu4e-maildir "/home/jsay/.Maildir"
+      user-mail-address "jsay.site@gmail.com"
+      user-full-name    "Jean-Sauveur Ay"
+      mu4e-compose-signature
+      (concat "Jean-Sauveur\n"))
 
-;; setup some handy shortcuts you can quickly switch to your Inbox --
-;; press ``ji'' then, when you want archive some messages, move them
-;; to the 'All Mail' folder by pressing ``ma''.
+;; (setq mu4e-trash-folder nil ;; must be configured later by context
+;;       mu4e-drafts-folder nil ;; must be configured later by context
+;;       mu4e-sent-folder nil ;; must be configured later by context
+;;       mu4e-compose-reply-to-address nil ;; must be configured later by context
+;;       mu4e-compose-signature nil ;; must be configured later by context
+;;       )
+(setq mu4e-drafts-folder "/Draft")
+(setq mu4e-sent-folder   "/Sent")
+(setq mu4e-trash-folder  "/Trash")
+(setq mu4e-refile-folder "/Archives")
 
 (setq mu4e-maildir-shortcuts
-    '( ("/INBOX"               . ?i)
-       ("/SciencesPo/INBOX"    . ?I)
-       ("/[Gmail].Sent Mail"   . ?s)
-       ("/[Gmail].Trash"       . ?t)
-       ("/[Gmail].All Mail"    . ?a)))
+    '( ("/Gmail/INBOX"       . ?g)
+       ("/SciencesPo/INBOX"  . ?s)
+       ("/Gmail/Sent"        . ?G)
+       ("/SciencesPo/Sent"   . ?S)
+       ("/Draft"             . ?d)
+       ("/Trash"             . ?t)
+       ("/Archives"          . ?a)))
 
-;; something about ourselves
-(setq
-   user-mail-address "jsay.site@gmail.com"
-   user-full-name    "Jean-Sauveur Ay"
-   mu4e-compose-signature
-    (concat "Jean-Sauveur\n"))
+(setq mu4e-compose-dont-reply-to-self t)
+(add-hook 'mu4e-compose-mode-hook
+        (defun my-do-compose-stuff ()
+           "My settings for message composition."
+           (set-fill-column 72)
+           (flyspell-mode)))
 
 (require 'smtpmail)
 (setq message-send-mail-function 'smtpmail-send-it
@@ -985,9 +988,9 @@
 
 (setq mu4e-contexts
     `( ,(make-mu4e-context
-          :name "Code"
-          :enter-func (lambda () (mu4e-message "Entering jsay.site context"))
-          :leave-func (lambda () (mu4e-message "Leaving jsay.site context"))
+          :name "Gmail"
+          :enter-func (lambda () (mu4e-message "Entering jsay.site@gmail.com"))
+          :leave-func (lambda () (mu4e-message "Leaving jsay.site@gmail.com"))
           :match-func (lambda (msg)
                         (when msg 
                           (mu4e-message-contact-field-matches msg 
@@ -1009,8 +1012,23 @@
                    ( mu4e-compose-signature  .
                      (concat
                        "Jean-Sauveur\n"))))))
-(setq mu4e-context-policy 'Code)
+(setq mu4e-context-policy nil)
 (setq mu4e-compose-context-policy nil)
+
+(require 'gnus-dired)
+(defun gnus-dired-mail-buffers ()
+  "Return a list of active message buffers."
+  (let (buffers)
+    (save-current-buffer
+      (dolist (buffer (buffer-list t))
+        (set-buffer buffer)
+        (when (and (derived-mode-p 'message-mode)
+                (null message-sent-message-via))
+          (push (buffer-name buffer) buffers))))
+    (nreverse buffers)))
+
+(setq gnus-dired-mail-mode 'mu4e-user-agent)
+(add-hook 'dired-mode-hook 'turn-on-gnus-dired-mode)
 
 (require 'org-mu4e)
 (setq org-mu4e-link-query-in-headers-mode nil)
