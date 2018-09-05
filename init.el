@@ -225,6 +225,9 @@
          (delete '("\\.pdf\\'" . default) org-file-apps)
          (add-to-list 'org-file-apps '("\\.pdf\\'" . "evince %s"))))
 
+(setq browse-url-browser-function 'browse-url-generic
+      browse-url-generic-program "chromium-browser")
+
 (setq org-loop-over-headlines-in-active-region t)
 (add-hook 'org-mode-hook 'turn-on-font-lock)
 
@@ -627,7 +630,7 @@
    (add-to-list 'org-latex-classes
 		'("PresPrint"
                   "\\documentclass[bigger]{beamer}
-                   \\usepackage{/home/jsay/Org/Latex/handoutWithNotes}
+                   \\usepackage{/home/jsay/Softwares/Latex/handoutWithNotes}
                    \\pgfpagesuselayout{3 on 1 with notes}[a4paper,border shrink=5mm]
                   [NO-DEFAULT-PACKAGES]\\usepackage{natbib}"
                   ("\\section*{%s}"       . "\\section*{%s}")
@@ -939,12 +942,23 @@
 
 (setq mu4e-sent-messages-behavior 'delete)
 
+(defun mu4e-in-new-frame ()
+  "Start mu4e in new frame."
+  (interactive)
+  (select-frame (make-frame))
+  (mu4e))
+
 (setq mail-user-agent 'mu4e-user-agent
       mu4e-get-mail-command "offlineimap"
       message-kill-buffer-on-exit t
       mu4e-confirm-quit nil
-      mu4e-maildir "/home/jsay/.Maildir"
-      user-mail-address "jsay.site@gmail.com"
+      mu4e-maildir      "/home/jsay/.Maildir"
+      mu4e-user-mail-address '("jsay.site@gmail.com"
+                               "jeansauveur.ay@sciencespo.fr")
+;      mu4e-compose-in-new-frame t
+      mu4e-compose-format-flowed t
+      mu4e-view-show-addresses 't
+      message-kill-buffer-on-exit t
       user-full-name    "Jean-Sauveur Ay"
       mu4e-compose-signature
       (concat "Jean-Sauveur\n"))
@@ -977,14 +991,15 @@
            (flyspell-mode)))
 
 (require 'smtpmail)
-(setq message-send-mail-function 'smtpmail-send-it
-   starttls-use-gnutls t
-   smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
-   smtpmail-auth-credentials
-     '(("smtp.gmail.com" 587 "jsay.site@gmail.com" nil))
-   smtpmail-default-smtp-server "smtp.gmail.com"
-   smtpmail-smtp-server "smtp.gmail.com"
-   smtpmail-smtp-service 587)
+(setq
+ send-mail-funtion 'smtpmail-send-it
+ message-send-mail-function 'smtpmail-send-it
+ mail-user-agent 'mu4e-user-agent
+ starttls-use-gnutls t
+ smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
+ smtpmail-default-smtp-server "smtp.gmail.com"
+ smtpmail-smtp-server "smtp.gmail.com"
+ smtpmail-smtp-service 587)
 
 (setq mu4e-contexts
     `( ,(make-mu4e-context
@@ -997,6 +1012,8 @@
                             :to "jsay.site@gmail.com")))
           :vars '( ( user-mail-address      . "jsay.site@gmail.com"  )
                    ( user-full-name         . "Jean-Sauveur Ay" )
+                   ( smtpmail-smtp-server   . "smtp.gmail.com" )
+		   ( smtpmail-mail-address  . "jsay.site@gmail.com" )
                    ( mu4e-compose-signature .
                      (concat
                        "Jean-Sauveur Ay\n"
@@ -1005,15 +1022,18 @@
           :name "SciencesPo"
           :enter-func (lambda () (mu4e-message "Switch to SciencesPo context"))
           :match-func (lambda (msg)
-                        (when msg
-                          (string-match-p "^/SciencesPo" (mu4e-message-field msg :maildir))))
+                        (when msg 
+                          (mu4e-message-contact-field-matches msg 
+                            :to "jeansauveur.ay@sciencespo.fr")))
           :vars '( ( user-mail-address       . "jeansauveur.ay@sciencespo.fr" )
                    ( user-full-name          . "Jean-Sauveur Ay" )
+                   ( smtpmail-smtp-server    . "smtp.gmail.com" )
+		   ( smtpmail-mail-address   . "jeansauveur.ay@sciencespo.fr")
                    ( mu4e-compose-signature  .
                      (concat
                        "Jean-Sauveur\n"))))))
 (setq mu4e-context-policy nil)
-(setq mu4e-compose-context-policy nil)
+(setq mu4e-compose-context-policy 'ask)
 
 (require 'gnus-dired)
 (defun gnus-dired-mail-buffers ()

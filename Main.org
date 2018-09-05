@@ -476,6 +476,13 @@
          (add-to-list 'org-file-apps '("\\.pdf\\'" . "evince %s"))))
 #+end_src
 
+*** Open with Chromium
+
+#+begin_src emacs-lisp 
+(setq browse-url-browser-function 'browse-url-generic
+      browse-url-generic-program "chromium-browser")
+#+end_src
+
 ** Archive
 
    Using =C-c $= to archive a selected region.
@@ -486,8 +493,7 @@
 #+end_src
 
 ** Babel
-*** General
-**** Useless confirmations
+*** Useless confirmations
 
      To execute the code blocks directly.
 
@@ -495,7 +501,7 @@
  (setq org-confirm-babel-evaluate nil)
 #+end_src
 
-**** Used languages
+*** Used languages
 
      Need to byte recompile =~/.emacs.d/elpa/org-20180716/ob-R.el=,
      see [[http://irreal.org/blog/?p=4295]].
@@ -517,7 +523,7 @@
     ))
 #+end_src
 
-**** Easy templates
+*** Easy templates
 
 #+begin_src emacs-lisp
  (eval-after-load 'org
@@ -537,7 +543,7 @@
  \n#+end_src\n\n#+ATTR_LaTeX: :placement [htb]\\small\n#+Caption: ?\n#+RESULTS:"))))
 #+end_src
 
-**** Code block execution
+*** Code block execution
 
 #+begin_src emacs-lisp
  (setq org-eval-blocks-without-name
@@ -549,13 +555,13 @@
  (global-set-key (kbd "C-c y") org-eval-blocks-without-name)
 #+end_src
 
-**** Code block export
+*** Code block export
 
 #+begin_src emacs-lisp
  (setq org-latex-listings 'listings)
 #+end_src
 
-*** Captures
+** Captures
 **** Agenda
 
 #+begin_src emacs-lisp
@@ -1216,7 +1222,7 @@
    (add-to-list 'org-latex-classes
 		'("PresPrint"
                   "\\documentclass[bigger]{beamer}
-                   \\usepackage{/home/jsay/Org/Latex/handoutWithNotes}
+                   \\usepackage{/home/jsay/Softwares/Latex/handoutWithNotes}
                    \\pgfpagesuselayout{3 on 1 with notes}[a4paper,border shrink=5mm]
                   [NO-DEFAULT-PACKAGES]\\usepackage{natbib}"
                   ("\\section*{%s}"       . "\\section*{%s}")
@@ -1593,7 +1599,7 @@
 
 #+BEGIN_SRC shell :tangle no
 git clone git://github.com/djcb/mu.git
-cd ~/software/mu
+cd ~/Softwares/mu
 ./autogen.sh && ./configure && make
 sudo make install
 #+END_SRC
@@ -1618,6 +1624,8 @@ sudo make install
    Make sure that IMAP is activated for all the accounts:
    https://myaccount.google.com/lesssecureapps
 
+   Delete sent message, they will be picked on gmail.
+
 #+begin_src emacs-lisp 
 (setq mu4e-sent-messages-behavior 'delete)
 #+end_src
@@ -1625,14 +1633,26 @@ sudo make install
 ** General
 
    http://irfu.cea.fr/Pisp/vianney.lebouteiller/emacs_mail.html
+   http://cachestocaches.com/2017/3/complete-guide-email-emacs-using-mu-and-/
 
 #+begin_src emacs-lisp
+(defun mu4e-in-new-frame ()
+  "Start mu4e in new frame."
+  (interactive)
+  (select-frame (make-frame))
+  (mu4e))
+
 (setq mail-user-agent 'mu4e-user-agent
       mu4e-get-mail-command "offlineimap"
       message-kill-buffer-on-exit t
       mu4e-confirm-quit nil
-      mu4e-maildir "/home/jsay/.Maildir"
-      user-mail-address "jsay.site@gmail.com"
+      mu4e-maildir      "/home/jsay/.Maildir"
+      mu4e-user-mail-address '("jsay.site@gmail.com"
+                               "jeansauveur.ay@sciencespo.fr")
+;      mu4e-compose-in-new-frame t
+      mu4e-compose-format-flowed t
+      mu4e-view-show-addresses 't
+      message-kill-buffer-on-exit t
       user-full-name    "Jean-Sauveur Ay"
       mu4e-compose-signature
       (concat "Jean-Sauveur\n"))
@@ -1660,7 +1680,7 @@ sudo make install
 
 ** Compose
 
-    list of contacts (shell) mu cfind
+    list of contacts (shell): =mu cfind=
 
     Default configuration: without context
 
@@ -1673,14 +1693,15 @@ sudo make install
            (flyspell-mode)))
 
 (require 'smtpmail)
-(setq message-send-mail-function 'smtpmail-send-it
-   starttls-use-gnutls t
-   smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
-   smtpmail-auth-credentials
-     '(("smtp.gmail.com" 587 "jsay.site@gmail.com" nil))
-   smtpmail-default-smtp-server "smtp.gmail.com"
-   smtpmail-smtp-server "smtp.gmail.com"
-   smtpmail-smtp-service 587)
+(setq
+ send-mail-funtion 'smtpmail-send-it
+ message-send-mail-function 'smtpmail-send-it
+ mail-user-agent 'mu4e-user-agent
+ starttls-use-gnutls t
+ smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
+ smtpmail-default-smtp-server "smtp.gmail.com"
+ smtpmail-smtp-server "smtp.gmail.com"
+ smtpmail-smtp-service 587)
 #+end_src
 
 ** Contexts
@@ -1700,6 +1721,8 @@ sudo make install
                             :to "jsay.site@gmail.com")))
           :vars '( ( user-mail-address      . "jsay.site@gmail.com"  )
                    ( user-full-name         . "Jean-Sauveur Ay" )
+                   ( smtpmail-smtp-server   . "smtp.gmail.com" )
+		   ( smtpmail-mail-address  . "jsay.site@gmail.com" )
                    ( mu4e-compose-signature .
                      (concat
                        "Jean-Sauveur Ay\n"
@@ -1708,15 +1731,18 @@ sudo make install
           :name "SciencesPo"
           :enter-func (lambda () (mu4e-message "Switch to SciencesPo context"))
           :match-func (lambda (msg)
-                        (when msg
-                          (string-match-p "^/SciencesPo" (mu4e-message-field msg :maildir))))
+                        (when msg 
+                          (mu4e-message-contact-field-matches msg 
+                            :to "jeansauveur.ay@sciencespo.fr")))
           :vars '( ( user-mail-address       . "jeansauveur.ay@sciencespo.fr" )
                    ( user-full-name          . "Jean-Sauveur Ay" )
+                   ( smtpmail-smtp-server    . "smtp.gmail.com" )
+		   ( smtpmail-mail-address   . "jeansauveur.ay@sciencespo.fr")
                    ( mu4e-compose-signature  .
                      (concat
                        "Jean-Sauveur\n"))))))
 (setq mu4e-context-policy nil)
-(setq mu4e-compose-context-policy nil)
+(setq mu4e-compose-context-policy 'ask)
 #+end_src
 
 ** Attaching
