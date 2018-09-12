@@ -53,6 +53,7 @@
 (global-set-key "\M-r" 'replace-string)
 
 (global-set-key [f2] 'split-window-horizontally)
+(setq split-width-threshold 120)
 
   (defvar LIMIT 1)
   (defvar time 0)

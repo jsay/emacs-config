@@ -35,7 +35,7 @@
     emacs / hunspell / r-base / texlive-file / libgmime-2.6-dev /
     libxapian-dev / mu (from github) / offlineimap / libssl-dev /
     libcurl4-openssl-dev / libxml2-dev / libgdal-dev / gnutls-bin /
-    gnupg2
+    gnupg2 / libapparmor-dev / libpoppler-cpp-dev
 
 *** Packages  (=package-install=)
 
@@ -191,6 +191,7 @@
 
 #+begin_src emacs-lisp
 (global-set-key [f2] 'split-window-horizontally)
+(setq split-width-threshold 120)
 #+end_src
 
 *** Shift between buffers
