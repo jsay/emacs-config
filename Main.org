@@ -1749,7 +1749,7 @@ sudo make install
 ** Attaching
 
    Normally it is C-c C-a in the message buffer, now your have also
-   C-c RET C-a from dired.
+   C-c RET C-a from dired, inspired from GNUS.
 
 #+begin_src emacs-lisp 
 (require 'gnus-dired)
