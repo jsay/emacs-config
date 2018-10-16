@@ -935,8 +935,6 @@
   (select-frame (make-frame))
   (mu4e))
 
-(call-interactively 'mu4e-in-new-frame)
-
 (setq mail-user-agent 'mu4e-user-agent
       mu4e-get-mail-command "offlineimap"
       mu4e-update-interval 300
@@ -1046,3 +1044,5 @@
 	     '("m" "Mail" entry 
 	       (file+headline "Main.org" "MESSAGERIE")
 	       "** TODO [#A] %?\nSCHEDULED: %(org-insert-time-stamp (org-read-date nil t \"+0d\"))\n%a\n"))
+
+(call-interactively 'mu4e-in-new-frame)

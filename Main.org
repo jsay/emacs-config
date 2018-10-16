@@ -1621,8 +1621,6 @@ sudo make install
   (select-frame (make-frame))
   (mu4e))
 
-(call-interactively 'mu4e-in-new-frame)
-
 (setq mail-user-agent 'mu4e-user-agent
       mu4e-get-mail-command "offlineimap"
       mu4e-update-interval 300
@@ -1788,3 +1786,8 @@ sudo make install
 	       "** TODO [#A] %?\nSCHEDULED: %(org-insert-time-stamp (org-read-date nil t \"+0d\"))\n%a\n"))
 #+end_src
 
+** Load with emacs
+
+#+begin_src emacs-lisp 
+(call-interactively 'mu4e-in-new-frame)
+#+end_src
