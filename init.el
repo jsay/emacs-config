@@ -924,8 +924,6 @@
      /*]]>*/-->
   </style>")
 
-(call-interactively 'mu4e-in-new-frame)
-
 (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
 (require 'mu4e)
 
@@ -936,6 +934,8 @@
   (interactive)
   (select-frame (make-frame))
   (mu4e))
+
+(call-interactively 'mu4e-in-new-frame)
 
 (setq mail-user-agent 'mu4e-user-agent
       mu4e-get-mail-command "offlineimap"

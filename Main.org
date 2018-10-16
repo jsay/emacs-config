@@ -1572,12 +1572,6 @@
 #+end_src
 
 * MU4E
-
-#+begin_src emacs-lisp 
-(call-interactively 'mu4e-in-new-frame)
-#+end_src
-
-
 ** Getting Mu
 
    From git
@@ -1626,6 +1620,8 @@ sudo make install
   (interactive)
   (select-frame (make-frame))
   (mu4e))
+
+(call-interactively 'mu4e-in-new-frame)
 
 (setq mail-user-agent 'mu4e-user-agent
       mu4e-get-mail-command "offlineimap"
