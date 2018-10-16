@@ -827,20 +827,6 @@
                   ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
 
      (add-to-list 'org-latex-classes
-                  '("RapRefere"
-                    "\\documentclass[12pt]{article}
-                    [NO-DEFAULT-PACKAGES]
-                    [PACKAGES]
-                    [EXTRA]
-   \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue, citecolor= black]{hyperref}
-                    \\parindent 20pt \\parskip 1ex
-                    \\usepackage{mathptmx, txfonts, natbib, etoolbox}
-   \\AtBeginEnvironment{quote}{\\small}   \\AtEndEnvironment{quote}{}"
-                    ("\\subsection*{%s}"      . "\\subsection*{%s}")
-                    ("\\subsubsection*{\\emph{%s}}"   . "\\subsubsection*{%s}")
-                    ("\\paragraph{%s}"        . "\\paragraph{%s}")))
-
-     (add-to-list 'org-latex-classes
                   '("RapConsul"
                     "\\documentclass[12pt]{hitec}
                     [NO-DEFAULT-PACKAGES]
@@ -938,6 +924,8 @@
      /*]]>*/-->
   </style>")
 
+(call-interactively 'mu4e-in-new-frame)
+
 (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
 (require 'mu4e)
 
@@ -951,6 +939,7 @@
 
 (setq mail-user-agent 'mu4e-user-agent
       mu4e-get-mail-command "offlineimap"
+      mu4e-update-interval 300
       message-kill-buffer-on-exit t
       mu4e-confirm-quit nil
       mu4e-maildir      "/home/jsay/.Maildir"

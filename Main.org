@@ -1438,28 +1438,6 @@
                   ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
  #+end_src
 
-**** RapRefere
-
-     The class to make referee reports, not well used because often
-     =.pdf= is not a good format.
-
- #+name: RapRefere
- #+begin_src emacs-lisp  :results silent
-     (add-to-list 'org-latex-classes
-                  '("RapRefere"
-                    "\\documentclass[12pt]{article}
-                    [NO-DEFAULT-PACKAGES]
-                    [PACKAGES]
-                    [EXTRA]
-   \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue, citecolor= black]{hyperref}
-                    \\parindent 20pt \\parskip 1ex
-                    \\usepackage{mathptmx, txfonts, natbib, etoolbox}
-   \\AtBeginEnvironment{quote}{\\small}   \\AtEndEnvironment{quote}{}"
-                    ("\\subsection*{%s}"      . "\\subsection*{%s}")
-                    ("\\subsubsection*{\\emph{%s}}"   . "\\subsubsection*{%s}")
-                    ("\\paragraph{%s}"        . "\\paragraph{%s}")))
- #+end_src
-
 **** RapConsul
 
      The class to make consulting report, not an academic style. Il
@@ -1594,6 +1572,12 @@
 #+end_src
 
 * MU4E
+
+#+begin_src emacs-lisp 
+(call-interactively 'mu4e-in-new-frame)
+#+end_src
+
+
 ** Getting Mu
 
    From git
@@ -1645,6 +1629,7 @@ sudo make install
 
 (setq mail-user-agent 'mu4e-user-agent
       mu4e-get-mail-command "offlineimap"
+      mu4e-update-interval 300
       message-kill-buffer-on-exit t
       mu4e-confirm-quit nil
       mu4e-maildir      "/home/jsay/.Maildir"
