@@ -351,7 +351,7 @@
 
 (autoload 'helm-bibtex "helm-bibtex" "" t)
 (setq bibtex-completion-bibliography "./Biblio.bib"
-      bibtex-completion-library-path "./Biblio"
+      bibtex-completion-library-path "./Biblio.bib"
       bibtex-completion-notes-path "./Biblio")
 (setq bibtex-completion-pdf-open-function 'org-open-file)
 (require 'org-ref)
