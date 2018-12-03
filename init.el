@@ -497,6 +497,8 @@
 ;(setq org-latex-pdf-process 
  ;     '("pdflatex %b" "bibtex %b" "pdflatex %b" "pdflatex %b" "Clean"))
 ;(setq org-latex-hyperref-format "\\ref{%s}")
+
+(setq org-latex-pdf-process (list "latexmk -f -pdf %f"))
 (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
 (setq org-latex-toc-command
       "\\begin{spacing}{1}\n \\tableofcontents\n\\end{spacing}\n\\clearpage")
