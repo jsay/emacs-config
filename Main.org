@@ -15,8 +15,8 @@
 
   - Group and harmonize bibliography stuff
   - see to create bercykeupon-theme.el in .emacs.d/themes/
-  - Allow title and author for markdown export, need to allow title in
-    delete all .elc file in org elpa repo
+  - Allow title and author for markdown export, need to delete all
+    .elc file in org elpa repo to allow title
   - Skip babel blocks from org mode for spell-check
   - Add archive folder for mu4e
 
@@ -721,12 +721,22 @@
 #+end_src
 
 * BIBLIO
+** Org-ref
 
-   UNDER PROGRESS REST NOT TANGLED
+   https://github.com/tmalsburg/helm-bibtex
 
-#+begin_src emacs-lisp tangle yes
+#+begin_src emacs-lisp 
+(setq reftex-default-bibliography '("./Biblio.bib"))
+(setq org-ref-bibliography-notes "./Main.org"
+      org-ref-default-bibliography '("./Biblio.bib")
+      org-ref-pdf-directory "./Biblio/")
+
 (autoload 'helm-bibtex "helm-bibtex" "" t)
-; (require 'ox-bibtex)
+(setq bibtex-completion-bibliography "./Biblio.bib"
+      bibtex-completion-library-path "./Biblio"
+      bibtex-completion-notes-path "./Biblio")
+(setq bibtex-completion-pdf-open-function 'org-open-file)
+(require 'org-ref)
 #+end_src
 
 ** RefTeX

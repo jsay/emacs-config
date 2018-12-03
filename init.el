@@ -344,8 +344,17 @@
 
 (require 'magithub)
 
+(setq reftex-default-bibliography '("./Biblio.bib"))
+(setq org-ref-bibliography-notes "./Main.org"
+      org-ref-default-bibliography '("./Biblio.bib")
+      org-ref-pdf-directory "./Biblio/")
+
 (autoload 'helm-bibtex "helm-bibtex" "" t)
-; (require 'ox-bibtex)
+(setq bibtex-completion-bibliography "./Biblio.bib"
+      bibtex-completion-library-path "./Biblio"
+      bibtex-completion-notes-path "./Biblio")
+(setq bibtex-completion-pdf-open-function 'org-open-file)
+(require 'org-ref)
 
 (require 'reftex)
 (add-hook 'LaTeX-mode-hook 'turn-on-reftex)   ; with AUCTeX LaTeX mode
