@@ -491,6 +491,8 @@
 ;;     (replace-match "" nil nil contents)))
 ;; (add-to-list 'org-export-filter-headline-functions 'my-ignore-headline)
 
+(setq org-latex-with-hyperref nil)
+
 ;; DROP THE USELESS LATEX FILES
 ;(list "Clean" "del %s.bbl %s.blg %s.aux %s.blg %s.out" 'org-latex-pdf-process nil t)
 ;; DEFINE THE PROCESS OF COMPILATION

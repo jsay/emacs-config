@@ -52,7 +52,7 @@
 
     cyber-punk theme (melpa) / org (org) / magit (elpa) / pager
     (marmalade) / ess (melpa) / auctex (gnu) / ox-gfm (melpa) /
-    magithub (melpa)
+    magithub (melpa) / org-ref (melpa)
 
 ** Use
 
@@ -984,6 +984,13 @@
 ;;     (replace-match "" nil nil contents)))
 ;; (add-to-list 'org-export-filter-headline-functions 'my-ignore-headline)
 #+end_src
+
+*** Hyperref package
+
+#+begin_src emacs-lisp 
+(setq org-latex-with-hyperref nil)
+#+end_src
+
 
 ** <<LATEX>> LaTeX setup
 *** <<LXGEN>> General

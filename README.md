@@ -8,7 +8,7 @@ Codes are in `Main.org` (with comments) other files are generated (tangled) from
 
 ## Softwares (`sudo apt install`)
 
-emacs / hunspell / r-base / texlive-file / libgmime-2.6-dev / libxapian-dev / mu (from github) / offlineimap / libssl-dev / libcurl4-openssl-dev / libxml2-dev
+emacs / hunspell / r-base / texlive-file / libgmime-2.6-dev / libxapian-dev / mu (from github) / offlineimap / libssl-dev / libcurl4-openssl-dev / libxml2-dev / libgdal-dev / gnutls-bin / gnupg2 / libapparmor-dev / libpoppler-cpp-dev
 
 
 ## Packages  (`package-install`)
@@ -23,16 +23,16 @@ Package manager configuration (open with `M-x list-packages`, choose with `i` an
 (package-initialize)
 ```
 
-cyber-punk theme (melpa) / org (org) / magit (elpa) / pager (marmalade) / ess (melpa) / auctex (gnu) / ox-gfm (melpa) / magithub (melpa)
+cyber-punk theme (melpa) / org (org) / magit (elpa) / pager (marmalade) / ess (melpa) / auctex (gnu) / ox-gfm (melpa) / magithub (melpa) / org-ref (melpa)
 
 
 # Use
 
-Elisp code of this README file &#x2013; about package manager, default directory, loaded libraries &#x2013; tangled (C-c C-v t) to `~/.emacs` and loaded automatically with emacs.
-
-Other configurations made on `Main.org`, tangled to `init.el` and loaded with:
+Emacs configurations from `Main.org` tangled (C-c C-v t) to `init.el` and loaded with:
 
 ```emacs-lisp
 (setq default-directory "/home/jsay/")
 (load-library "~/emacs-config/init.el")
 ```
+
+Elisp code of this README file &#x2013; about package manager, default directory, loaded libraries &#x2013; tangled to `~/.emacs` and loaded automatically with emacs.
