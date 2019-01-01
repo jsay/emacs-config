@@ -249,21 +249,21 @@
     (shell      . t)
     ))
 
- (eval-after-load 'org
-   '(progn
-      (add-to-list 'org-structure-template-alist
-		   '("e" "#+begin_src emacs-lisp \n?\n#+end_src\n"))
-      (add-to-list 'org-structure-template-alist
-		   '("g" "#+Name: Lst:\n#+Header: :width 7 :height 7
-#+begin_src R :results graphics :file \"Figures/?.pdf\"\n\n#+end_src\n
-#+Name: Fig:\n#+ATTR_LaTeX: :options scale= .5\n#+Caption: \n#+RESULTS: Lst:"))
-      (add-to-list 'org-structure-template-alist
-		   '("i" "#+begin_src R :results silent\n?\n#+end_src\n"))
-      (add-to-list 'org-structure-template-alist
-		   '("x" "#+begin_src R :results output exemple\n?\n#+end_src\n"))
-      (add-to-list 'org-structure-template-alist
-		   '("t" "#+begin_src R :results value exemple :rownames yes :colnames yes
- \n#+end_src\n\n#+ATTR_LaTeX: :placement [htb]\\small\n#+Caption: ?\n#+RESULTS:"))))
+(defun org-insert-R-block-with-graph (name)
+  "Asks name and inserts org-mode source code snippet"
+  (interactive "sname? ")
+  (insert 
+   (if (string= name "")
+       ""
+     (concat "#+NAME: Lst:" name "\n") )
+   (format "#+BEGIN_SRC R :results graphics :file \"Figures/%s.pdf\"\n\n#+END_SRC\n
+#+Name: Fig:%s\n#+ATTR_LaTeX: :options scale= .5\n#+Caption: \n#+RESULTS: Lst:%s" 
+	   name name name
+	   )
+   )
+  (forward-line -6)
+  (goto-char (line-end-position))
+  )
 
  (setq org-eval-blocks-without-name
        '(lambda() (interactive)

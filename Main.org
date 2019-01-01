@@ -526,7 +526,28 @@
 
 *** Easy templates
 
+    YASnippets was not a good solution for me, so by hand since
+    org-9.2.
+
 #+begin_src emacs-lisp
+(defun org-insert-R-block-with-graph (name)
+  "Asks name and inserts org-mode source code snippet"
+  (interactive "sname? ")
+  (insert 
+   (if (string= name "")
+       ""
+     (concat "#+NAME: Lst:" name "\n") )
+   (format "#+BEGIN_SRC R :results graphics :file \"Figures/%s.pdf\"\n\n#+END_SRC\n
+#+Name: Fig:%s\n#+ATTR_LaTeX: :options scale= .5\n#+Caption: \n#+RESULTS: Lst:%s" 
+	   name name name
+	   )
+   )
+  (forward-line -6)
+  (goto-char (line-end-position))
+  )
+#+end_src
+
+#+begin_src emacs-lisp :tangle no
  (eval-after-load 'org
    '(progn
       (add-to-list 'org-structure-template-alist
