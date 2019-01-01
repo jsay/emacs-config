@@ -264,6 +264,7 @@
   (forward-line -6)
   (goto-char (line-end-position))
   )
+(global-set-key "\C-c\C-g" 'org-insert-R-block-with-graph)
 
  (setq org-eval-blocks-without-name
        '(lambda() (interactive)
