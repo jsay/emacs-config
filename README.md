@@ -23,7 +23,7 @@ Package manager configuration (open with `M-x list-packages`, choose with `i` an
 (package-initialize)
 ```
 
-cyber-punk theme (melpa) / org (org) / magit (elpa) / pager (marmalade) / ess (melpa) / auctex (gnu) / ox-gfm (melpa) / magithub (melpa) / org-ref (melpa)
+cyber-punk theme (melpa) / org (org) / magit (melpa) / pager (marmalade) / ess (melpa) / auctex (gnu) / ox-gfm (melpa) / magithub (melpa) / org-ref (melpa) / use-package (melpa) / moody (melpa) / tabbar (melpa)
 
 
 # Use

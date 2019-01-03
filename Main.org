@@ -53,7 +53,7 @@
     cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
     (marmalade) / ess (melpa) / auctex (gnu) / ox-gfm (melpa) /
     magithub (melpa) / org-ref (melpa) / use-package (melpa) / moody
-    (melpa) / tabbar (melpa)
+    (melpa) / tabbar (melpa) / minion (melpa) / eyebrowse (melpa)
 
 ** Use
 
@@ -92,21 +92,19 @@
 *** Theme
 
 #+begin_src emacs-lisp
-;(add-to-list 'custom-theme-load-path "/home/jsay/.emacs.d/themes/")
-;(load-theme 'cyberpunk t)
-(eval-after-load "org"
-  '(progn 
-     (use-package cyberpunk-theme
-       :config
-       (load-theme 'cyberpunk t)
-       (let ((line (face-attribute 'mode-line :underline)))
+  (eval-after-load "org"
+    '(progn 
+       (use-package cyberpunk-theme
+	 :config
+	 (load-theme 'cyberpunk t)
+	 (let ((line (face-attribute 'mode-line :underline)))
 	 (set-face-attribute 'org-level-1        nil :foreground "#f9f2d9")
 	 (set-face-attribute 'mode-line          nil :overline   nil)
-	 (set-face-attribute 'mode-line-inactive nil :overline   nil)
-	 (set-face-attribute 'mode-line-inactive nil :underline  nil)
-	 (set-face-attribute 'mode-line          nil :box        nil)
+	 (set-face-attribute 'mode-line          nil :height     50)
+         (set-face-attribute 'mode-line          nil :box        nil)
 	 (set-face-attribute 'mode-line-inactive nil :box        nil)
-	 (set-face-attribute 'mode-line-inactive nil :background "#f9f2d9")))))
+	 (set-face-attribute 'mode-line nil :font "DejaVu Sans Mono-12")
+	 ))))
 #+end_src
 
 *** Font size
@@ -118,9 +116,9 @@
 *** Maximum screen size
 
 #+begin_src emacs-lisp
-  (menu-bar-mode -1)
-  (tool-bar-mode -1)
-  (scroll-bar-mode -1)
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
 #+end_src
 
 *** Cursor
@@ -138,13 +136,7 @@
 *** First page of Emacs
 
 #+begin_src emacs-lisp
-  (setq inhibit-startup-message t)
-  (find-file "Main.org")
-#+end_src
-
-*** Starting as full screeen
-
-#+begin_src emacs-lisp
+(setq inhibit-startup-message t)
 (defun toggle-fullscreen ()
   (interactive)
   (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
@@ -153,6 +145,7 @@
 	    		 '(2 "_NET_WM_STATE_MAXIMIZED_HORZ" 0))
 )
 (toggle-fullscreen)
+(find-file "Main.org")
 #+end_src
 
 *** Uniquify
@@ -184,35 +177,36 @@
   (setq x-underline-at-descent-line t)
   (moody-replace-mode-line-buffer-identification)
   (moody-replace-vc-mode))
+
+(use-package minions
+  :config (minions-mode 1))
 #+end_src
 
 *** Tabbar
+**** General
 
 #+begin_src emacs-lisp
 (require 'tabbar)
 (customize-set-variable 'tabbar-background-color "gray20")
-(customize-set-variable 'tabbar-separator '(0.5))
+(custom-set-variables '(tabbar-separator (quote (0.05))))
 (customize-set-variable 'tabbar-use-images nil)
 (tabbar-mode 1)
-(define-key global-map [(alt j)] 'tabbar-backward)
-(define-key global-map [(alt k)] 'tabbar-forward)
 
 ;; Colors
 (set-face-attribute 'tabbar-default nil
         :background "gray20" :foreground 
         "white" :distant-foreground "gray50"
-        :family "Helvetica Neue" :box nil)
+        :family "DejaVu Sans Mono-12" :box nil)
 (set-face-attribute 'tabbar-unselected nil
-        :background "gray20" :foreground "white" :box nil)
+        :background "gray20" :foreground "#4c83ff" :box nil)
 (set-face-attribute 'tabbar-modified nil
         :foreground "gray50" :box nil
         :inherit 'tabbar-unselected)
 (set-face-attribute 'tabbar-selected nil
-        :background "black" :foreground "white" :box nil)
+        :background "black" :foreground "#4c83ff" :box nil)
 (set-face-attribute 'tabbar-selected-modified nil
         :inherit 'tabbar-selected :foreground "GoldenRod2" :box nil)
-(set-face-attribute 'tabbar-button nil
-        :box nil)
+(set-face-attribute 'tabbar-button nil :box nil)
 
 (require 'powerline)
 (defvar my/tabbar-height 20)
@@ -223,6 +217,28 @@
                           (format " %s  " (car tab))
                           my/tabbar-right)))
 (setq tabbar-tab-label-function #'my/tabbar-tab-label-function)
+#+end_src
+
+**** Groups
+
+#+begin_src emacs-lisp
+(defun my-tabbar-buffer-groups-by-project ()
+  (list
+   (cond
+    ((memq major-mode '(mu4e-view-mode mu4e-main-mode
+		       mu4e-headers-mode mu4e-view-raw-mode))
+     "Activity")
+    ((memq major-mode '(eshell-mode term-mode shell-mode))
+     (if (projectile-project-p) (projectile-project-name) "Common"))
+    ((string-equal "*" (substring (buffer-name) 0 1))
+     "Emacs")
+    ((memq major-mode '(fundamental-mode))
+     "Emacs")
+    ((memq major-mode '(org-mode org-agenda-mode diary-mode))
+     "OrgMode")
+    )))
+
+(setq tabbar-buffer-groups-function 'my-tabbar-buffer-groups-by-project)
 #+end_src
 
 ** Editing
@@ -236,9 +252,15 @@
 *** Moving between pages
 
 #+begin_src emacs-lisp
-  (require 'pager)
-  (global-set-key [next]     'pager-page-down)
-  (global-set-key [prior]    'pager-page-up)
+(require 'pager)
+(global-set-key [next]     'pager-page-down)
+(global-set-key [prior]    'pager-page-up)
+#+end_src
+
+*** Eyebrowse
+
+#+begin_src emacs-lisp
+(eyebrowse-mode t)
 #+end_src
 
 *** Replace strings
@@ -1717,12 +1739,6 @@ sudo make install
    http://cachestocaches.com/2017/3/complete-guide-email-emacs-using-mu-and-/
 
 #+begin_src emacs-lisp
-(defun mu4e-in-new-frame ()
-  "Start mu4e in new frame."
-  (interactive)
-  (select-frame (make-frame))
-  (mu4e))
-
 (setq mail-user-agent 'mu4e-user-agent
       mu4e-get-mail-command "offlineimap"
       mu4e-update-interval 300
@@ -1758,6 +1774,19 @@ sudo make install
        ("/Draft"             . ?d)
        ("/Trash"             . ?t)
        ("/Archives"          . ?a)))
+#+end_src
+
+** Launching
+
+#+begin_src emacs-lisp
+(defun mu4e-in-new-frame ()
+  "Start mu4e in new frame."
+  (interactive)
+  (select-frame (make-frame-command))
+  (toggle-frame-maximized)
+  (set-frame-size (selected-frame) 200 64)
+  (mu4e))
+(call-interactively 'mu4e-in-new-frame)
 #+end_src
 
 ** Compose
@@ -1888,8 +1917,3 @@ sudo make install
 	       "** TODO [#A] %?\nSCHEDULED: %(org-insert-time-stamp (org-read-date nil t \"+0d\"))\n%a\n"))
 #+end_src
 
-** Load with emacs
-
-#+begin_src emacs-lisp 
-(call-interactively 'mu4e-in-new-frame)
-#+end_src
