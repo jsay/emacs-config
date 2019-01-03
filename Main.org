@@ -10,6 +10,7 @@
 :END:      
 
 # https://github.com/gongzhitaao/dotemacs/blob/master/init.el
+# https://github.com/rememberYou/.emacs.d/blob/master/config.org
 
 * Pense-bête                                 :noexport:
 
@@ -100,7 +101,7 @@
 	 (let ((line (face-attribute 'mode-line :underline)))
 	 (set-face-attribute 'org-level-1        nil :foreground "#f9f2d9")
 	 (set-face-attribute 'mode-line          nil :overline   nil)
-	 (set-face-attribute 'mode-line          nil :height     50)
+	 (set-face-attribute 'mode-line-inactive nil :height     50)
          (set-face-attribute 'mode-line          nil :box        nil)
 	 (set-face-attribute 'mode-line-inactive nil :box        nil)
 	 (set-face-attribute 'mode-line nil :font "DejaVu Sans Mono-12")
@@ -259,6 +260,8 @@
 
 *** Eyebrowse
 
+    https://github.com/wasamasa/eyebrowse
+    
 #+begin_src emacs-lisp
 (eyebrowse-mode t)
 #+end_src
@@ -1784,7 +1787,7 @@ sudo make install
   (interactive)
   (select-frame (make-frame-command))
   (toggle-frame-maximized)
-  (set-frame-size (selected-frame) 200 64)
+;  (set-frame-size (selected-frame) 200 64)
   (mu4e))
 (call-interactively 'mu4e-in-new-frame)
 #+end_src
