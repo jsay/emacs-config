@@ -6,8 +6,27 @@
 
 (load-library "iso-transl")
 
-(add-to-list 'custom-theme-load-path "/home/jsay/.emacs.d/themes/")
-(load-theme 'cyberpunk t)
+;(add-to-list 'custom-theme-load-path "/home/jsay/.emacs.d/themes/")
+;(load-theme 'cyberpunk t)
+(eval-after-load "org"
+  '(progn 
+     (use-package cyberpunk-theme
+       :config
+       (load-theme 'cyberpunk t)
+       (let ((line (face-attribute 'mode-line :underline)))
+	 (set-face-attribute 'org-level-1        nil :foreground "#f9f2d9")
+	 (set-face-attribute 'mode-line          nil :overline   line)
+	 (set-face-attribute 'mode-line-inactive nil :overline   line)
+	 (set-face-attribute 'mode-line-inactive nil :underline  line)
+	 (set-face-attribute 'mode-line          nil :box        nil)
+	 (set-face-attribute 'mode-line-inactive nil :box        nil)
+	 (set-face-attribute 'mode-line-inactive nil :background "#f9f2d9")))))
+
+(use-package moody
+  :config
+  (setq x-underline-at-descent-line t)
+  (moody-replace-mode-line-buffer-identification)
+  (moody-replace-vc-mode))
 
   (set-face-attribute 'default nil :height 175)
 
@@ -41,6 +60,12 @@
           (run-with-idle-timer 0.1 nil
                                (lambda (fg) (set-face-foreground 'mode-line fg))
                                orig-fg))))
+
+(use-package moody
+  :config
+  (setq x-underline-at-descent-line t)
+  (moody-replace-mode-line-buffer-identification)
+  (moody-replace-vc-mode))
 
   (delete-selection-mode t)
   (fset 'yes-or-no-p 'y-or-n-p)
