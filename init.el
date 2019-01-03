@@ -99,6 +99,8 @@
     ((memq major-mode '(mu4e-view-mode mu4e-main-mode
 		       mu4e-headers-mode mu4e-view-raw-mode))
      "Activity")
+    ((string-match "^*magit" (buffer-name)) (list "#magic"))
+                ((string-match "^COMMIT_EDITMSG" (buffer-name)) (list "#magic"))
     ((memq major-mode '(eshell-mode term-mode shell-mode))
      (if (projectile-project-p) (projectile-project-name) "Common"))
     ((string-equal "*" (substring (buffer-name) 0 1))
@@ -258,6 +260,23 @@
                          'auctex-mode-flyspell-skip-myenv)))
 
 (put 'dired-find-alternate-file 'disabled nil)
+
+(use-package pdf-tools
+; :pin manual ;; manually update
+ :config
+ ;; initialise
+ (pdf-tools-install)
+ ;; open pdfs scaled to fit page
+ (setq-default pdf-view-display-size 'fit-page)
+ ;; automatically annotate highlights
+ (setq pdf-annot-activate-created-annotations t)
+ ;; use normal isearch
+ (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward))
+
+(setq pdf-view-resize-factor 1.1)
+(define-key pdf-view-mode-map (kbd "h") 'pdf-annot-add-highlight-markup-annotation)
+(define-key pdf-view-mode-map (kbd "t") 'pdf-annot-add-text-annotation)
+(define-key pdf-view-mode-map (kbd "D") 'pdf-annot-delete)
 
 (setq org-export-allow-BIND t)
 
