@@ -120,6 +120,7 @@
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
+(set-frame-parameter nil 'undecorated t)
 #+end_src
 
 *** Cursor
@@ -197,7 +198,7 @@
 (set-face-attribute 'tabbar-default nil
         :background "gray20" :foreground 
         "white" :distant-foreground "gray50"
-        :family "DejaVu Sans Mono-12" :box nil)
+        :font "DejaVu Sans Mono-12" :box nil)
 (set-face-attribute 'tabbar-unselected nil
         :background "gray20" :foreground "#4c83ff" :box nil)
 (set-face-attribute 'tabbar-modified nil
@@ -583,10 +584,10 @@
 *** Open with evince
 
 #+begin_src emacs-lisp
-(add-hook 'org-mode-hook
-      '(lambda ()
-         (delete '("\\.pdf\\'" . default) org-file-apps)
-         (add-to-list 'org-file-apps '("\\.pdf\\'" . "evince %s"))))
+;; (add-hook 'org-mode-hook
+;;       '(lambda ()
+;;          (delete '("\\.pdf\\'" . default) org-file-apps)
+;;          (add-to-list 'org-file-apps '("\\.pdf\\'" . "evince %s"))))
 #+end_src
 
 *** Open with Chromium
@@ -763,11 +764,6 @@
 
 #+begin_src emacs-lisp
 (global-set-key [C-tab] 'dabbrev-expand)
-; following do not work
-;(require 'auto-complete)
-;(add-to-list 'ac-dictionary-directories "/usr/share/auto-complete/dict/")
-;(require 'auto-complete-config)
-;(ac-config-default)
 (setq ess-use-auto-complete t)
 #+end_src
 
@@ -1774,9 +1770,6 @@ sudo make install
       message-kill-buffer-on-exit t
       mu4e-confirm-quit nil
       mu4e-maildir      "/home/jsay/.Maildir"
-      mu4e-user-mail-address '("jsay.site@gmail.com"
-                               "jeansauveur.ay@sciencespo.fr")
-;      mu4e-compose-in-new-frame t
       mu4e-compose-format-flowed t
       mu4e-view-show-addresses 't
       message-kill-buffer-on-exit t
@@ -1807,7 +1800,7 @@ sudo make install
 
 ** Launching
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (defun mu4e-in-new-frame ()
   "Start mu4e in new frame."
   (interactive)
