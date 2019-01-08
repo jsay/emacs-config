@@ -476,6 +476,7 @@
 #+end_src
 
 ** Pdf-tools
+*** General
 
    https://github.com/politza/pdf-tools
    M-x pdf-tools-help
@@ -497,6 +498,32 @@
 (define-key pdf-view-mode-map (kbd "h") 'pdf-annot-add-highlight-markup-annotation)
 (define-key pdf-view-mode-map (kbd "t") 'pdf-annot-add-text-annotation)
 (define-key pdf-view-mode-map (kbd "D") 'pdf-annot-delete)
+#+end_src
+
+*** scrolling
+
+#+begin_src emacs-lisp
+(defun my/scroll-other-window ()
+  (interactive)
+  (let* ((wind (other-window-for-scrolling))
+         (mode (with-selected-window wind major-mode)))
+    (if (eq mode 'pdf-view-mode)
+        (with-selected-window wind
+      (pdf-view-next-line-or-next-page 2))
+      (scroll-other-window 2))))
+(global-set-key (kbd "M-<next>") 'my/scroll-other-window)
+
+(defun my/scroll-other-window-down ()
+  (interactive)
+  (let* ((wind (other-window-for-scrolling))
+         (mode (with-selected-window wind major-mode)))
+    (if (eq mode 'pdf-view-mode)
+    (with-selected-window wind
+      (progn
+        (pdf-view-previous-line-or-previous-page 2)
+        (other-window 1)))
+      (scroll-other-window-down 2))))
+(global-set-key (kbd "M-<prior>") 'my/scroll-other-window-down)
 #+end_src
 
 * ORG MODE
@@ -1933,9 +1960,5 @@ sudo make install
 #+begin_src emacs-lisp
 (require 'org-mu4e)
 (setq org-mu4e-link-query-in-headers-mode nil)
-(add-to-list 'org-capture-templates 
-	     '("m" "Mail" entry 
-	       (file+headline "Main.org" "MESSAGERIE")
-	       "** TODO [#A] %?\nSCHEDULED: %(org-insert-time-stamp (org-read-date nil t \"+0d\"))\n%a\n"))
 #+end_src
 
