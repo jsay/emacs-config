@@ -33,7 +33,7 @@
 ** Dependencies
 *** Softwares (=sudo apt install=)
 
-    emacs / hunspell / r-base / texlive-file / libgmime-2.6-dev /
+    emacs / hunspell / r-base / texlive-full / libgmime-2.6-dev /
     libxapian-dev / mu (from github) / offlineimap / libssl-dev /
     libcurl4-openssl-dev / libxml2-dev / libgdal-dev / gnutls-bin /
     gnupg2 / libapparmor-dev / libpoppler-cpp-dev
