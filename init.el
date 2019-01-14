@@ -301,6 +301,11 @@
       (scroll-other-window-down 2))))
 (global-set-key (kbd "M-<prior>") 'my/scroll-other-window-down)
 
+(eval-after-load 'org '(require 'org-pdfview))
+(add-to-list 'org-file-apps 
+             '("\\.pdf\\'" . (lambda (file link)
+                                     (org-pdfview-open link))))
+
 (setq org-export-allow-BIND t)
 
   (setq org-src-fontify-natively t)

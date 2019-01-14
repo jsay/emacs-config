@@ -500,7 +500,7 @@
 (define-key pdf-view-mode-map (kbd "D") 'pdf-annot-delete)
 #+end_src
 
-*** scrolling
+*** Scrolling
 
 #+begin_src emacs-lisp
 (defun my/scroll-other-window ()
@@ -524,6 +524,15 @@
         (other-window 1)))
       (scroll-other-window-down 2))))
 (global-set-key (kbd "M-<prior>") 'my/scroll-other-window-down)
+#+end_src
+
+*** org links
+
+#+begin_src emacs-lisp
+(eval-after-load 'org '(require 'org-pdfview))
+(add-to-list 'org-file-apps 
+             '("\\.pdf\\'" . (lambda (file link)
+                                     (org-pdfview-open link))))
 #+end_src
 
 * ORG MODE
