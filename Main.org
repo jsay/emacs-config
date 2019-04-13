@@ -197,14 +197,6 @@
 (global-set-key [prior]    'pager-page-up)
 #+end_src
 
-*** Eyebrowse
-
-    https://github.com/wasamasa/eyebrowse
-    
-#+begin_src emacs-lisp
-(eyebrowse-mode t)
-#+end_src
-
 *** Replace strings
 
 #+begin_src emacs-lisp
