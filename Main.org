@@ -54,7 +54,7 @@
     cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
     (marmalade) / ess (melpa) / auctex (gnu) / ox-gfm (melpa) /
     magithub (melpa) / org-ref (melpa) / use-package (melpa) / moody
-    (melpa) / tabbar (melpa) / minion (melpa) / eyebrowse (melpa)
+    (melpa) / pdf-tools (melpa)
 
 ** Use
 
@@ -179,9 +179,6 @@
   (setq x-underline-at-descent-line t)
   (moody-replace-mode-line-buffer-identification)
   (moody-replace-vc-mode))
-
-(use-package minions
-  :config (minions-mode 1))
 #+end_src
 
 ** Editing
