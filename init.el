@@ -14,7 +14,7 @@
 	 (let ((line (face-attribute 'mode-line :underline)))
 	 (set-face-attribute 'org-level-1        nil :foreground "#f9f2d9")
 	 (set-face-attribute 'mode-line          nil :overline   nil)
-	 (set-face-attribute 'mode-line-inactive nil :height     50)
+	 (set-face-attribute 'mode-line          nil :height     50)
          (set-face-attribute 'mode-line          nil :box        nil)
 	 (set-face-attribute 'mode-line-inactive nil :box        nil)
 	 (set-face-attribute 'mode-line nil :font "DejaVu Sans Mono-12")
@@ -25,7 +25,6 @@
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
-(set-frame-parameter nil 'undecorated t)
 
   (blink-cursor-mode -1)
 
@@ -59,69 +58,12 @@
   (moody-replace-mode-line-buffer-identification)
   (moody-replace-vc-mode))
 
-(use-package minions
-  :config (minions-mode 1))
-
-(require 'tabbar)
-(customize-set-variable 'tabbar-background-color "gray20")
-(custom-set-variables '(tabbar-separator (quote (0.05))))
-(customize-set-variable 'tabbar-use-images nil)
-(tabbar-mode 1)
-
-;; Colors
-(set-face-attribute 'tabbar-default nil
-        :background "gray20" :foreground 
-        "white" :distant-foreground "gray50"
-        :font "DejaVu Sans Mono-12" :box nil)
-(set-face-attribute 'tabbar-unselected nil
-        :background "gray20" :foreground "#4c83ff" :box nil)
-(set-face-attribute 'tabbar-modified nil
-        :foreground "gray50" :box nil
-        :inherit 'tabbar-unselected)
-(set-face-attribute 'tabbar-selected nil
-        :background "black" :foreground "#4c83ff" :box nil)
-(set-face-attribute 'tabbar-selected-modified nil
-        :inherit 'tabbar-selected :foreground "GoldenRod2" :box nil)
-(set-face-attribute 'tabbar-button nil :box nil)
-
-(require 'powerline)
-(defvar my/tabbar-height 20)
-(defvar my/tabbar-left (powerline-wave-right 'tabbar-default nil my/tabbar-height))
-(defvar my/tabbar-right (powerline-wave-left nil 'tabbar-default my/tabbar-height))
-(defun my/tabbar-tab-label-function (tab)
-  (powerline-render (list my/tabbar-left
-                          (format " %s  " (car tab))
-                          my/tabbar-right)))
-(setq tabbar-tab-label-function #'my/tabbar-tab-label-function)
-
-(defun my-tabbar-buffer-groups-by-project ()
-  (list
-   (cond
-    ((memq major-mode '(mu4e-view-mode mu4e-main-mode
-		       mu4e-headers-mode mu4e-view-raw-mode))
-     "Activity")
-    ((string-match "^*magit" (buffer-name)) (list "#magic"))
-                ((string-match "^COMMIT_EDITMSG" (buffer-name)) (list "#magic"))
-    ((memq major-mode '(eshell-mode term-mode shell-mode))
-     (if (projectile-project-p) (projectile-project-name) "Common"))
-    ((string-equal "*" (substring (buffer-name) 0 1))
-     "Emacs")
-    ((memq major-mode '(fundamental-mode))
-     "Emacs")
-    ((memq major-mode '(org-mode org-agenda-mode diary-mode))
-     "OrgMode")
-    )))
-
-(setq tabbar-buffer-groups-function 'my-tabbar-buffer-groups-by-project)
-
   (delete-selection-mode t)
   (fset 'yes-or-no-p 'y-or-n-p)
 
 (require 'pager)
 (global-set-key [next]     'pager-page-down)
 (global-set-key [prior]    'pager-page-up)
-
-(eyebrowse-mode t)
 
 (global-unset-key "\M-r")
 (global-set-key "\M-r" 'replace-string)

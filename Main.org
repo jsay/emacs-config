@@ -51,7 +51,7 @@
 (package-initialize)
 #+end_src
 
-    cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
+cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
     (marmalade) / ess (melpa) / auctex (gnu) / ox-gfm (melpa) /
     magithub (melpa) / org-ref (melpa) / use-package (melpa) / moody
     (melpa) / pdf-tools (melpa)
@@ -101,7 +101,7 @@
 	 (let ((line (face-attribute 'mode-line :underline)))
 	 (set-face-attribute 'org-level-1        nil :foreground "#f9f2d9")
 	 (set-face-attribute 'mode-line          nil :overline   nil)
-	 (set-face-attribute 'mode-line-inactive nil :height     50)
+	 (set-face-attribute 'mode-line          nil :height     50)
          (set-face-attribute 'mode-line          nil :box        nil)
 	 (set-face-attribute 'mode-line-inactive nil :box        nil)
 	 (set-face-attribute 'mode-line nil :font "DejaVu Sans Mono-12")
@@ -120,7 +120,6 @@
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
-(set-frame-parameter nil 'undecorated t)
 #+end_src
 
 *** Cursor
