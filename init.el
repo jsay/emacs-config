@@ -707,41 +707,41 @@
 
    (add-to-list 'org-latex-classes
 		'("ManueStat"
-                  "\\documentclass[11pt]{article}
-			[NO-DEFAULT-PACKAGES]
-    \\parindent 20pt \\parskip 1ex \\usepackage{natbib, dcolumn}
-     \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue]{hyperref}
-      \\hypersetup{bookmarksnumbered, pdfstartview= {FitH}, citecolor= {blue},
-                   linkcolor= {red}, urlcolor= {blue}, pdfpagemode= None}
-     \\usepackage[left= 1in, right= 1in, top= 1in, bottom= 1in]{geometry}
-     \\usepackage[singlespacing]{setspace} \\usepackage[bottom]{footmisc}
-     \\usepackage{dcolumn} 
-       \\setlength{\\belowcaptionskip}{5pt} \\usepackage{subcaption}
-       \\usepackage{mathpazo, amscd, upgreek, booktabs, listings, color, longtable, amssymb, bm}  
-                      \\let\\itemize\\compactitem
-                       \\let\\description\\compactdesc
-			\\let\\enumerate\\compactenum
-   \\lstloadlanguages{R} \\definecolor{storg}{rgb}{1,0.5,0}
-    \\definecolor{gray}{rgb}{0.5,0.5,0.5}
-     \\newcommand{\\indexfonction}[1]{\\index{#1@\\texttt{#1}}}
-     \\lstset{language= R, basewidth= .51em, tabsize= 2,
-       inputencoding=utf8,
-       literate={à}{{\\'a}}1 {è}{{\\`e}}1 {é}{{\\'e}}1 {ù}{{\\`u}}1
-		{ç}{{\c{c}}}1 {ï}{{i}}1 {ö}{{o}}1 {û}{{\\^u}}1,
-       xleftmargin= 0.3cm, framexleftmargin=   10pt,
-       aboveskip=   0.5cm,  framextopmargin=    6pt,
-       belowskip=   0.5cm,  framexbottommargin= 6pt,
-       showstringspaces= false, extendedchars= true,
-       commentstyle=      \\color{gray} , frame= tb,
-       keywordstyle=       \\color{storg},
-       backgroundcolor=     \\color{white},
-       basicstyle= {\\footnotesize  \\ttfamily\\bfseries},
-       stringstyle= \\ttfamily\\bfseries\\color{blue}}"
-			("\\section{%s}"       . "\\section*{%s}")
-			("\\subsection{%s}"    . "\\subsection*{%s}")
-			("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-			("\\paragraph{%s}"     . "\\paragraph*{%s}")
-			("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
+                "\\documentclass[11pt]{article}
+		[NO-DEFAULT-PACKAGES]
+		\\parindent 20pt \\parskip 1ex \\usepackage{natbib, dcolumn}
+		\\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue]{hyperref}
+		\\hypersetup{bookmarksnumbered, pdfstartview= {FitH}, citecolor= {blue},
+                linkcolor= {red}, urlcolor= {blue}, pdfpagemode= None}
+		\\usepackage[left= 1in, right= 1in, top= 1in, bottom= 1in]{geometry}
+		\\usepackage[singlespacing]{setspace} \\usepackage[bottom]{footmisc}
+		\\usepackage{dcolumn} 
+		\\setlength{\\belowcaptionskip}{5pt} \\usepackage{subcaption}
+		\\usepackage{courier, booktabs, listings, color, longtable, amssymb, bm}  
+                \\let\\itemize\\compactitem
+                \\let\\description\\compactdesc
+		\\let\\enumerate\\compactenum
+		\\lstloadlanguages{R} \\definecolor{storg}{rgb}{1,0.5,0}
+		\\definecolor{gray}{rgb}{0.5,0.5,0.5}
+		\\newcommand{\\indexfonction}[1]{\\index{#1@\\texttt{#1}}}
+		\\lstset{language= R, basewidth= .51em, tabsize= 2,
+		inputencoding=utf8,
+		literate={à}{{\\'a}}1 {è}{{\\`e}}1 {é}{{\\'e}}1 {ù}{{\\`u}}1
+		{ç}{{\c{c}}}1 {ï}{{i}}1 {ô}{{\\^o}}1 {ö}{{o}}1 {û}{{\\^u}}1,
+		xleftmargin= 0.3cm, framexleftmargin=   10pt,
+		aboveskip=   0.5cm,  framextopmargin=    6pt,
+		belowskip=   0cm,  framexbottommargin= 6pt,
+		showstringspaces= false, extendedchars= true,
+		commentstyle=      \\color{gray} , frame= tb,
+		keywordstyle=       \\color{storg},
+		backgroundcolor=     \\color{white},
+		basicstyle= {\\footnotesize  \\ttfamily},
+		stringstyle= \\ttfamily\\color{blue}}"
+		("\\section{%s}"       . "\\section*{%s}")
+		("\\subsection{%s}"    . "\\subsection*{%s}")
+		("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		("\\paragraph{%s}"     . "\\paragraph*{%s}")
+		("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
 
      (add-to-list 'org-latex-classes
                   '("PlanCours"
@@ -1021,16 +1021,16 @@
                     ("\\subsection{%s}"    . "\\subsection{%s}")
                     ("\\subsubsection{%s}" . "\\subsubsection{%s}")))
 
-   (add-to-list 'org-latex-classes
-		'("WorkinPap"
-                  "\\documentclass[12pt]{article}
-                  [NO-DEFAULT-PACKAGES]
- \\usepackage[sf]{titlesec} \\usepackage{bm, amssymb, natbib}
- \\parindent 20pt \\parskip 1ex
- \\usepackage[usenames,dvipsnames]{xcolor}
- \\usepackage[colorlinks, pdfstartview= FitH, citecolor= Fuchsia, linkcolor= red, urlcolor= blue]{hyperref}
- \\usepackage[left= 1in, right= 1in, top= 1in, bottom= 1in]{geometry}
-                  \\usepackage{times, inconsolata, setspace}"
+(add-to-list 'org-latex-classes
+	     '("WorkinPap"
+	       "\\documentclass[12pt]{article}
+                [NO-DEFAULT-PACKAGES]
+                \\usepackage[sf]{titlesec}\\usepackage{bm, amssymb, natbib}
+                \\parindent 20pt \\parskip 1ex
+                \\usepackage[usenames,dvipsnames]{xcolor}
+                \\usepackage[colorlinks, pdfstartview= FitH, citecolor= Fuchsia, linkcolor= red, urlcolor= blue]{hyperref}
+                \\usepackage[left= 1in, right= 1in, top= 1in, bottom= 1in]{geometry}
+                \\usepackage{times, inconsolata}"
                   ("\\section{%s}"       . "\\section*{%s}")
                   ("\\subsection{%s}"    . "\\subsection*{%s}")
                   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
