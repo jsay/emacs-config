@@ -14,7 +14,7 @@
 	 (let ((line (face-attribute 'mode-line :underline)))
 	 (set-face-attribute 'org-level-1        nil :foreground "#f9f2d9")
 	 (set-face-attribute 'mode-line          nil :overline   nil)
-	 (set-face-attribute 'mode-line          nil :height     50)
+	 (set-face-attribute 'mode-line-inactive nil :height     50)
          (set-face-attribute 'mode-line          nil :box        nil)
 	 (set-face-attribute 'mode-line-inactive nil :box        nil)
 	 (set-face-attribute 'mode-line nil :font "DejaVu Sans Mono-12")
@@ -767,14 +767,14 @@
                   ("\\paragraph{%s}"     . "\\paragraph*{%s}")
                   ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
 
-   (add-to-list 'org-latex-classes
-		'("PresSemin"
-                  "\\documentclass[serif, 14pt, aspectratio=169]{beamer}
+(add-to-list 'org-latex-classes
+	     '("PresSemin"
+               "\\documentclass[serif, 14pt, aspectratio=169]{beamer}
                   [NO-PACKAGES]
                   \\setbeamercolor{alerted text}{fg= beamer@blendedblue!50}
                   \\usepackage[T1]{fontenc}
                   \\usepackage[style=nejm, url=false, backend=bibtex]{biblatex} 
-                  \\usepackage{ctable, graphics, epsfig, hyperref, color, url, concmath, amssymb, pifont}
+                  \\usepackage{ctable, graphics, epsfig, hyperref, color, url, concmath, amssymb}
                   \\setbeamertemplate{navigation symbols}{} \\definecolor{violet}{rgb}{0.25,0,0.75}
                   \\AtBeginSection[]{
                   \\begin{frame}<beamer>

@@ -101,7 +101,7 @@ cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
 	 (let ((line (face-attribute 'mode-line :underline)))
 	 (set-face-attribute 'org-level-1        nil :foreground "#f9f2d9")
 	 (set-face-attribute 'mode-line          nil :overline   nil)
-	 (set-face-attribute 'mode-line          nil :height     50)
+	 (set-face-attribute 'mode-line-inactive nil :height     50)
          (set-face-attribute 'mode-line          nil :box        nil)
 	 (set-face-attribute 'mode-line-inactive nil :box        nil)
 	 (set-face-attribute 'mode-line nil :font "DejaVu Sans Mono-12")
@@ -1411,16 +1411,16 @@ cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
 
      A classical beamer class to present into seminaries and workshops.
 
- #+name: ClPlanCours
- #+begin_src emacs-lisp  :results silent
-   (add-to-list 'org-latex-classes
-		'("PresSemin"
-                  "\\documentclass[serif, 14pt, aspectratio=169]{beamer}
+#+name: ClPlanCours
+#+begin_src emacs-lisp  :results silent
+(add-to-list 'org-latex-classes
+	     '("PresSemin"
+               "\\documentclass[serif, 14pt, aspectratio=169]{beamer}
                   [NO-PACKAGES]
                   \\setbeamercolor{alerted text}{fg= beamer@blendedblue!50}
                   \\usepackage[T1]{fontenc}
                   \\usepackage[style=nejm, url=false, backend=bibtex]{biblatex} 
-                  \\usepackage{ctable, graphics, epsfig, hyperref, color, url, concmath, amssymb, pifont}
+                  \\usepackage{ctable, graphics, epsfig, hyperref, color, url, concmath, amssymb}
                   \\setbeamertemplate{navigation symbols}{} \\definecolor{violet}{rgb}{0.25,0,0.75}
                   \\AtBeginSection[]{
                   \\begin{frame}<beamer>
@@ -1476,7 +1476,7 @@ cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
                   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                   ("\\paragraph{%s}"     . "\\paragraph*{%s}")
                   ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
- #+end_src
+#+end_src
 
 **** PresSemin (FR)
 
