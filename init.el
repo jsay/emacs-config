@@ -14,7 +14,7 @@
 	 (let ((line (face-attribute 'mode-line :underline)))
 	 (set-face-attribute 'org-level-1        nil :foreground "#f9f2d9")
 	 (set-face-attribute 'mode-line          nil :overline   nil)
-	 (set-face-attribute 'mode-line-inactive nil :height     50)
+	 (set-face-attribute 'mode-line          nil :height     50)
          (set-face-attribute 'mode-line          nil :box        nil)
 	 (set-face-attribute 'mode-line-inactive nil :box        nil)
 	 (set-face-attribute 'mode-line nil :font "DejaVu Sans Mono-12")
@@ -39,7 +39,7 @@
 	    		 '(2 "_NET_WM_STATE_MAXIMIZED_HORZ" 0))
 )
 (toggle-fullscreen)
-(find-file "Main.org")
+(find-file "~/org/Main.org")
 
 (require 'uniquify)
 (setq uniquify-buffer-name-style 'forward)
@@ -243,10 +243,12 @@
       (scroll-other-window-down 2))))
 (global-set-key (kbd "M-<prior>") 'my/scroll-other-window-down)
 
-(eval-after-load 'org '(require 'org-pdfview))
-(add-to-list 'org-file-apps 
-             '("\\.pdf\\'" . (lambda (file link)
-                                     (org-pdfview-open link))))
+(use-package vterm
+  :ensure t
+  :commands vterm
+  :config
+  (setq vterm-max-scrollback 10000))
+(global-set-key (kbd "C-c v") #'vterm)
 
 (setq org-export-allow-BIND t)
 
@@ -269,7 +271,7 @@
 (require 'ox-gfm)(eval-after-load "org"
   '(require 'ox-gfm nil t))
 
-(setq org-agenda-files '("~/Main.org"))
+(setq org-agenda-files '("~/org/Main.org"))
 
   (setq calendar-day-name-array
 	["Dimanche" "Lundi" "Mardi"
@@ -287,7 +289,7 @@
 ;;          (add-to-list 'org-file-apps '("\\.pdf\\'" . "evince %s"))))
 
 (setq browse-url-browser-function 'browse-url-generic
-      browse-url-generic-program "chromium-browser")
+      browse-url-generic-program "chromium")
 
 (setq org-loop-over-headlines-in-active-region t)
 (add-hook 'org-mode-hook 'turn-on-font-lock)
@@ -338,7 +340,7 @@
 
 (setq org-capture-templates
       '(("t" "Agenda"
-	 entry (file+headline  "~/Main.org" "AGENDA")
+	 entry (file+headline  "~/org/Main.org" "AGENDA")
 	 "* TODO %?\n\n")))
 
 (add-to-list 'org-capture-templates 
@@ -459,52 +461,6 @@
         ("headlessfullcite" "[{")))
 (setq reftex-cite-prompt-optional-args nil)
 (setq reftex-cite-cleanup-optional-args t)
-
-(require 'org-bibtex)
-(defun my-location-bib (type)
-  "If there is completion support for link type TYPE, offer it."
-  (let ((fun (intern (concat "org-" type "-complete-link"))))
-    (if (functionp fun)
-	(funcall fun)
-      (read-string "Link (no completion support): " (concat type ":")))))
-
-(org-add-link-type                       
- "ref"
- (lambda (key)
-   (org-open-file cby-references-file t nil key))
- (lambda (path desc format)
-   (cond
-    ((eq format 'html)
-     (let* ((postnote (cby-org-link-get-postnote desc))
-            (prenote (cby-org-link-get-prenote desc)))
-       (cond
-        ((and postnote)
-     (format "<a href= \"#%s\">%s</a>" path postnote)))))
-    ((eq format 'latex)
-     (let* ((postnote (cby-org-link-get-postnote desc))
-            (prenote (cby-org-link-get-prenote desc)))
-       (cond
-        ((and prenote)
-	  (format "\\cite%s{%s}" prenote path))
-	 (t
-	  (format "\\cite{%s}" path))))))))
-
-(defun cby-org-link-get-prenote (desc)
-     "Extract prenote from org-mode link description. Prenote
-      starts at the first '(' and ends at first ','."
-     (let ((prenote (cadr (split-string desc "[\",]"))))
-       (if prenote
-           (copy-sequence
-            ;; clean string
-            (replace-regexp-in-string "[ \t\n]" "" prenote)))))
-(defun cby-org-link-get-postnote (desc)
-     "Extract postnote from org-mode link description. Postnote
-      starts at last ',' and ends at last ')'."
-     (let ((postnote (cadr (split-string desc "[,]"))))
-       (if postnote
-           (copy-sequence
-            ;; clean string
-            (replace-regexp-in-string "[ \t\n]" "" postnote)))))
 
 (setq org-odt-data-dir nil)
 (setq org-html-coding-system 'utf-8-unix)
@@ -649,7 +605,7 @@
 
    (add-to-list 'org-latex-classes
 		'("ManueStat"
-                "\\documentclass[11pt]{article}
+                "\\documentclass[12pt]{article}
 		[NO-DEFAULT-PACKAGES]
 		\\parindent 20pt \\parskip 1ex \\usepackage{natbib, dcolumn}
 		\\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue]{hyperref}
@@ -668,8 +624,8 @@
 		\\newcommand{\\indexfonction}[1]{\\index{#1@\\texttt{#1}}}
 		\\lstset{language= R, basewidth= .51em, tabsize= 2,
 		inputencoding=utf8,
-		literate={à}{{\\'a}}1 {è}{{\\`e}}1 {é}{{\\'e}}1 {ù}{{\\`u}}1
-		{ç}{{\c{c}}}1 {ï}{{i}}1 {ô}{{\\^o}}1 {ö}{{o}}1 {û}{{\\^u}}1,
+		literate={à}{{\\'a}}1 {â}{{\\^a}}1 {²}{{$^2$}}1 {è}{{\\`e}}1 {é}{{\\'e}}1 {ù}{{\\`u}}1 {’}{{'}}1
+		{ç}{{\c{c}}}1 {ï}{{i}}1 {ô}{{\\^o}}1 {Ô}{{\\^O}}1 {ö}{{o}}1 {û}{{\\^u}}1 {É}{{\\`E}}1 {È}{{\\`E}}1 {î}{{\\^i}}1 {Ã©}{{\\`E}}1,
 		xleftmargin= 0.3cm, framexleftmargin=   10pt,
 		aboveskip=   0.5cm,  framextopmargin=    6pt,
 		belowskip=   0cm,  framexbottommargin= 6pt,
@@ -709,72 +665,28 @@
                   ("\\paragraph*{%s}"     . "\\paragraph*{%s}")
                   ("\\subparagraph*{%s}"  . "\\subparagraph*{%s}")))
 
-   (add-to-list 'org-latex-classes
-		'("PresOther"
-                  "\\documentclass[serif, 13pt]{beamer}
-                  [NO-PACKAGES]
-                  \\setbeamercolor{alerted text}{fg= beamer@blendedblue!50}
-                  \\usepackage[T1]{fontenc}
-                  \\usepackage[style=nejm, url=false, backend=bibtex]{biblatex} 
-                  \\usepackage{ctable, graphics, epsfig, hyperref, color, url, concmath, amssymb, pifont}
-                  \\setbeamertemplate{navigation symbols}{} \\definecolor{violet}{rgb}{0.25,0,0.75}
- \\makeatletter
- \\ExecuteBibliographyOptions{sorting=none}
-
- \\DeclareCiteCommand{\\notefullcite}[\\mkbibbrackets]
-   {\\usebibmacro{cite:init}%
-    \\usebibmacro{prenote}}
-   {\\usebibmacro{citeindex}%
-    \\usebibmacro{notefullcite}%
-    \\usebibmacro{cite:comp}}
-   {}
-   {\\usebibmacro{cite:dump}%
-    \\usebibmacro{postnote}}
-
- \\newbibmacro*{notefullcite}{%
-   \\ifciteseen
-     {}
-     {\\footnotetext[\\thefield{labelnumber}]{%
-	\\usedriver{}{\\thefield{entrytype}}.}}}
- \\DeclareCiteCommand{\\superfullcite}[\\cbx@superscript]%
-   {\\usebibmacro{cite:init}%
-    \\let\\multicitedelim=\\supercitedelim
-    \\iffieldundef{prenote}
-      {}
-      {\\BibliographyWarning{Ignoring prenote argument}}%
-    \\iffieldundef{postnote}
-      {}
-      {\\BibliographyWarning{Ignoring postnote argument}}}
-   {\\usebibmacro{citeindex}%
-    \\usebibmacro{superfullcite}%
-    \\usebibmacro{cite:comp}}
-   {}
-   {\\usebibmacro{cite:dump}}
- \\newbibmacro*{superfullcite}{%
-   \\ifciteseen
-     {}
-     {\\xappto\\cbx@citehook{%
-	\\noexpand\\footnotetext[\\thefield{labelnumber}]{%
-          \\fullcite{\\thefield{entrykey}}.}}}}
- \\newrobustcmd{\\cbx@superscript}[1]{%
-  \\mkbibsuperscript{#1}%
-   \\cbx@citehook
-   \\global\\let\\cbx@citehook=\\empty}
- \\let\\cbx@citehook=\\empty"
-                  ("\\section{%s}"       . "\\section*{%s}")
-                  ("\\subsection{%s}"    . "\\subsection*{%s}")
-                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-                  ("\\paragraph{%s}"     . "\\paragraph*{%s}")
-                  ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
+(add-to-list 'org-latex-classes
+	     '("PresOther"
+	       "\\documentclass[serif, 14pt]{beamer}
+                [NO-PACKAGES]
+                \\setbeamercolor{alerted text}{fg= beamer@blendedblue!50}
+                \\usepackage[T1]{fontenc}
+                \\usepackage{graphics, epsfig, hyperref, color, url, concmath, amssymb, pifont}
+                \\setbeamertemplate{navigation symbols}{} \\definecolor{violet}{rgb}{0.25,0,0.75}
+                 \\makeatletter"
+                ("\\section{%s}"       . "\\section*{%s}")
+                ("\\subsection{%s}"    . "\\subsection*{%s}")
+                ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                ("\\paragraph{%s}"     . "\\paragraph*{%s}")
+                ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
 
 (add-to-list 'org-latex-classes
 	     '("PresSemin"
-               "\\documentclass[serif, 14pt, aspectratio=169]{beamer}
+               "\\documentclass[13pt, aspectratio=169]{beamer}
                   [NO-PACKAGES]
                   \\setbeamercolor{alerted text}{fg= beamer@blendedblue!50}
-                  \\usepackage[T1]{fontenc}
                   \\usepackage[style=nejm, url=false, backend=bibtex]{biblatex} 
-                  \\usepackage{ctable, graphics, epsfig, hyperref, color, url, concmath, amssymb}
+                  \\usepackage{graphics, epsfig, hyperref, color, url, concmath, amssymb}
                   \\setbeamertemplate{navigation symbols}{} \\definecolor{violet}{rgb}{0.25,0,0.75}
                   \\AtBeginSection[]{
                   \\begin{frame}<beamer>
@@ -911,6 +823,20 @@
                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                     ("\\paragraph{%s}"     . "\\paragraph{%s}")))
 
+    (add-to-list 'org-latex-classes
+                 '("RapRefere"
+                   "\\documentclass[12pt]{article}
+                   [NO-DEFAULT-PACKAGES]
+                   [PACKAGES]
+                   [EXTRA]
+  \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue, citecolor= black]{hyperref}
+                   \\parindent 20pt \\parskip 1ex
+                   \\usepackage{mathptmx, txfonts, natbib, etoolbox}
+  \\AtBeginEnvironment{quote}{\\small}   \\AtEndEnvironment{quote}{}"
+                   ("\\subsection*{%s}"      . "\\subsection*{%s}")
+                   ("\\subsubsection*{\\emph{%s}}"   . "\\subsubsection*{%s}")
+                   ("\\paragraph{%s}"        . "\\paragraph{%s}")))
+
      (add-to-list 'org-latex-classes
                   '("StandAlon"
                     "\\documentclass[varwidth= \\maxdimen, border=20pt, convert={size=640x}]{standalone}
@@ -992,111 +918,3 @@
        .example         { background-color: #FFF5F5; }
      /*]]>*/-->
   </style>")
-
-(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
-(require 'mu4e)
-
-(setq mu4e-sent-messages-behavior 'delete)
-
-(setq mail-user-agent 'mu4e-user-agent
-      mu4e-get-mail-command "offlineimap"
-      mu4e-update-interval 300
-      message-kill-buffer-on-exit t
-      mu4e-confirm-quit nil
-      mu4e-maildir      "/home/jsay/.Maildir"
-      mu4e-compose-format-flowed t
-      mu4e-view-show-addresses 't
-      message-kill-buffer-on-exit t
-      user-full-name    "Jean-Sauveur Ay"
-      mu4e-compose-signature
-      (concat "Jean-Sauveur\n"))
-
-;; (setq mu4e-trash-folder nil ;; must be configured later by context
-;;       mu4e-drafts-folder nil ;; must be configured later by context
-;;       mu4e-sent-folder nil ;; must be configured later by context
-;;       mu4e-compose-reply-to-address nil ;; must be configured later by context
-;;       mu4e-compose-signature nil ;; must be configured later by context
-;;       )
-(setq mu4e-drafts-folder "/Draft")
-(setq mu4e-sent-folder   "/Sent")
-(setq mu4e-trash-folder  "/Trash")
-(setq mu4e-refile-folder "/Archives")
-
-(setq mu4e-maildir-shortcuts
-    '( ("/Gmail/INBOX"       . ?g)
-       ("/SciencesPo/INBOX"  . ?s)
-       ("/Gmail/Sent"        . ?G)
-       ("/SciencesPo/Sent"   . ?S)
-       ("/Draft"             . ?d)
-       ("/Trash"             . ?t)
-       ("/Archives"          . ?a)))
-
-(setq mu4e-compose-dont-reply-to-self t)
-(add-hook 'mu4e-compose-mode-hook
-        (defun my-do-compose-stuff ()
-           "My settings for message composition."
-           (set-fill-column 72)
-           (flyspell-mode)))
-
-(require 'smtpmail)
-(setq
- send-mail-funtion 'smtpmail-send-it
- message-send-mail-function 'smtpmail-send-it
- mail-user-agent 'mu4e-user-agent
- starttls-use-gnutls t
- smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
- smtpmail-default-smtp-server "smtp.gmail.com"
- smtpmail-smtp-server "smtp.gmail.com"
- smtpmail-smtp-service 587)
-
-(setq mu4e-contexts
-    `( ,(make-mu4e-context
-          :name "Gmail"
-          :enter-func (lambda () (mu4e-message "Entering jsay.site@gmail.com"))
-          :leave-func (lambda () (mu4e-message "Leaving jsay.site@gmail.com"))
-          :match-func (lambda (msg)
-                        (when msg 
-                          (mu4e-message-contact-field-matches msg 
-                            :to "jsay.site@gmail.com")))
-          :vars '( ( user-mail-address      . "jsay.site@gmail.com"  )
-                   ( user-full-name         . "Jean-Sauveur Ay" )
-                   ( smtpmail-smtp-server   . "smtp.gmail.com" )
-		   ( smtpmail-mail-address  . "jsay.site@gmail.com" )
-                   ( mu4e-compose-signature .
-                     (concat
-                       "Jean-Sauveur Ay\n"
-                       "INRA, UMR CESAER DIJON\n"))))
-       ,(make-mu4e-context
-          :name "SciencesPo"
-          :enter-func (lambda () (mu4e-message "Switch to SciencesPo context"))
-          :match-func (lambda (msg)
-                        (when msg 
-                          (mu4e-message-contact-field-matches msg 
-                            :to "jeansauveur.ay@sciencespo.fr")))
-          :vars '( ( user-mail-address       . "jeansauveur.ay@sciencespo.fr" )
-                   ( user-full-name          . "Jean-Sauveur Ay" )
-                   ( smtpmail-smtp-server    . "smtp.gmail.com" )
-		   ( smtpmail-mail-address   . "jeansauveur.ay@sciencespo.fr")
-                   ( mu4e-compose-signature  .
-                     (concat
-                       "Jean-Sauveur\n"))))))
-(setq mu4e-context-policy nil)
-(setq mu4e-compose-context-policy 'ask)
-
-(require 'gnus-dired)
-(defun gnus-dired-mail-buffers ()
-  "Return a list of active message buffers."
-  (let (buffers)
-    (save-current-buffer
-      (dolist (buffer (buffer-list t))
-        (set-buffer buffer)
-        (when (and (derived-mode-p 'message-mode)
-                (null message-sent-message-via))
-          (push (buffer-name buffer) buffers))))
-    (nreverse buffers)))
-
-(setq gnus-dired-mail-mode 'mu4e-user-agent)
-(add-hook 'dired-mode-hook 'turn-on-gnus-dired-mode)
-
-(require 'org-mu4e)
-(setq org-mu4e-link-query-in-headers-mode nil)

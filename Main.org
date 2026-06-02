@@ -3,7 +3,7 @@
 #+OPTIONS:     LaTeX:t tags:nil toc:nil H:5 html-style:nil task:t
 #+LANGUAGE:    en
 #+LaTeX_CLASS: ManueLisp
-#+STARTUP:     hideblocks
+#+STARTUP:      fold
 #+DRAWERS:     PROPERTIES BABEL
 :BABEL:
 #+PROPERTY: header-args :tangle "init.el" :results silent
@@ -101,7 +101,7 @@ cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
 	 (let ((line (face-attribute 'mode-line :underline)))
 	 (set-face-attribute 'org-level-1        nil :foreground "#f9f2d9")
 	 (set-face-attribute 'mode-line          nil :overline   nil)
-	 (set-face-attribute 'mode-line-inactive nil :height     50)
+	 (set-face-attribute 'mode-line          nil :height     50)
          (set-face-attribute 'mode-line          nil :box        nil)
 	 (set-face-attribute 'mode-line-inactive nil :box        nil)
 	 (set-face-attribute 'mode-line nil :font "DejaVu Sans Mono-12")
@@ -146,7 +146,7 @@ cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
 	    		 '(2 "_NET_WM_STATE_MAXIMIZED_HORZ" 0))
 )
 (toggle-fullscreen)
-(find-file "Main.org")
+(find-file "~/org/Main.org")
 #+end_src
 
 *** Uniquify
@@ -453,14 +453,21 @@ cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
 (global-set-key (kbd "M-<prior>") 'my/scroll-other-window-down)
 #+end_src
 
-*** org links
+*** link with org
+
+org-pdftools seems good
+
+** vterm
 
 #+begin_src emacs-lisp
-(eval-after-load 'org '(require 'org-pdfview))
-(add-to-list 'org-file-apps 
-             '("\\.pdf\\'" . (lambda (file link)
-                                     (org-pdfview-open link))))
+(use-package vterm
+  :ensure t
+  :commands vterm
+  :config
+  (setq vterm-max-scrollback 10000))
+(global-set-key (kbd "C-c v") #'vterm)
 #+end_src
+
 
 * ORG MODE
 ** General
@@ -522,7 +529,7 @@ cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
 *** Set loaded files
 
 #+begin_src emacs-lisp
-(setq org-agenda-files '("~/Main.org"))
+(setq org-agenda-files '("~/org/Main.org"))
 #+end_src
 
 *** French language
@@ -557,7 +564,7 @@ cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
 
 #+begin_src emacs-lisp 
 (setq browse-url-browser-function 'browse-url-generic
-      browse-url-generic-program "chromium-browser")
+      browse-url-generic-program "chromium")
 #+end_src
 
 ** Archive
@@ -666,7 +673,7 @@ cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
 #+begin_src emacs-lisp
 (setq org-capture-templates
       '(("t" "Agenda"
-	 entry (file+headline  "~/Main.org" "AGENDA")
+	 entry (file+headline  "~/org/Main.org" "AGENDA")
 	 "* TODO %?\n\n")))
 #+end_src
 
@@ -912,7 +919,7 @@ cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
 
     For the refile of bibliography captures, with completion
 
-#+begin_src emacs-lisp tangle no
+#+begin_src emacs-lisp :tangle no
 (require 'org-bibtex)
 (defun my-location-bib (type)
   "If there is completion support for link type TYPE, offer it."
@@ -924,7 +931,7 @@ cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
 
     Suite à un message sur la liste
 
-#+begin_src emacs-lisp tangle no
+#+begin_src emacs-lisp :tangle no
 (org-add-link-type                       
  "ref"
  (lambda (key)
@@ -1268,7 +1275,7 @@ cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
 #+begin_src emacs-lisp  :results silent
    (add-to-list 'org-latex-classes
 		'("ManueStat"
-                "\\documentclass[11pt]{article}
+                "\\documentclass[12pt]{article}
 		[NO-DEFAULT-PACKAGES]
 		\\parindent 20pt \\parskip 1ex \\usepackage{natbib, dcolumn}
 		\\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue]{hyperref}
@@ -1287,8 +1294,8 @@ cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
 		\\newcommand{\\indexfonction}[1]{\\index{#1@\\texttt{#1}}}
 		\\lstset{language= R, basewidth= .51em, tabsize= 2,
 		inputencoding=utf8,
-		literate={à}{{\\'a}}1 {è}{{\\`e}}1 {é}{{\\'e}}1 {ù}{{\\`u}}1
-		{ç}{{\c{c}}}1 {ï}{{i}}1 {ô}{{\\^o}}1 {ö}{{o}}1 {û}{{\\^u}}1,
+		literate={à}{{\\'a}}1 {â}{{\\^a}}1 {²}{{$^2$}}1 {è}{{\\`e}}1 {é}{{\\'e}}1 {ù}{{\\`u}}1 {’}{{'}}1
+		{ç}{{\c{c}}}1 {ï}{{i}}1 {ô}{{\\^o}}1 {Ô}{{\\^O}}1 {ö}{{o}}1 {û}{{\\^u}}1 {É}{{\\`E}}1 {È}{{\\`E}}1 {î}{{\\^i}}1 {Ã©}{{\\`E}}1,
 		xleftmargin= 0.3cm, framexleftmargin=   10pt,
 		aboveskip=   0.5cm,  framextopmargin=    6pt,
 		belowskip=   0cm,  framexbottommargin= 6pt,
@@ -1346,65 +1353,22 @@ cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
 
 **** PresOther
 
- #+name: ClPlanCours
- #+begin_src emacs-lisp  :results silent
-   (add-to-list 'org-latex-classes
-		'("PresOther"
-                  "\\documentclass[serif, 13pt]{beamer}
-                  [NO-PACKAGES]
-                  \\setbeamercolor{alerted text}{fg= beamer@blendedblue!50}
-                  \\usepackage[T1]{fontenc}
-                  \\usepackage[style=nejm, url=false, backend=bibtex]{biblatex} 
-                  \\usepackage{ctable, graphics, epsfig, hyperref, color, url, concmath, amssymb, pifont}
-                  \\setbeamertemplate{navigation symbols}{} \\definecolor{violet}{rgb}{0.25,0,0.75}
- \\makeatletter
- \\ExecuteBibliographyOptions{sorting=none}
-
- \\DeclareCiteCommand{\\notefullcite}[\\mkbibbrackets]
-   {\\usebibmacro{cite:init}%
-    \\usebibmacro{prenote}}
-   {\\usebibmacro{citeindex}%
-    \\usebibmacro{notefullcite}%
-    \\usebibmacro{cite:comp}}
-   {}
-   {\\usebibmacro{cite:dump}%
-    \\usebibmacro{postnote}}
-
- \\newbibmacro*{notefullcite}{%
-   \\ifciteseen
-     {}
-     {\\footnotetext[\\thefield{labelnumber}]{%
-	\\usedriver{}{\\thefield{entrytype}}.}}}
- \\DeclareCiteCommand{\\superfullcite}[\\cbx@superscript]%
-   {\\usebibmacro{cite:init}%
-    \\let\\multicitedelim=\\supercitedelim
-    \\iffieldundef{prenote}
-      {}
-      {\\BibliographyWarning{Ignoring prenote argument}}%
-    \\iffieldundef{postnote}
-      {}
-      {\\BibliographyWarning{Ignoring postnote argument}}}
-   {\\usebibmacro{citeindex}%
-    \\usebibmacro{superfullcite}%
-    \\usebibmacro{cite:comp}}
-   {}
-   {\\usebibmacro{cite:dump}}
- \\newbibmacro*{superfullcite}{%
-   \\ifciteseen
-     {}
-     {\\xappto\\cbx@citehook{%
-	\\noexpand\\footnotetext[\\thefield{labelnumber}]{%
-          \\fullcite{\\thefield{entrykey}}.}}}}
- \\newrobustcmd{\\cbx@superscript}[1]{%
-  \\mkbibsuperscript{#1}%
-   \\cbx@citehook
-   \\global\\let\\cbx@citehook=\\empty}
- \\let\\cbx@citehook=\\empty"
-                  ("\\section{%s}"       . "\\section*{%s}")
-                  ("\\subsection{%s}"    . "\\subsection*{%s}")
-                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-                  ("\\paragraph{%s}"     . "\\paragraph*{%s}")
-                  ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
+#+name: ClPlanCours
+#+begin_src emacs-lisp  :results silent
+(add-to-list 'org-latex-classes
+	     '("PresOther"
+	       "\\documentclass[serif, 14pt]{beamer}
+                [NO-PACKAGES]
+                \\setbeamercolor{alerted text}{fg= beamer@blendedblue!50}
+                \\usepackage[T1]{fontenc}
+                \\usepackage{graphics, epsfig, hyperref, color, url, concmath, amssymb, pifont}
+                \\setbeamertemplate{navigation symbols}{} \\definecolor{violet}{rgb}{0.25,0,0.75}
+                 \\makeatletter"
+                ("\\section{%s}"       . "\\section*{%s}")
+                ("\\subsection{%s}"    . "\\subsection*{%s}")
+                ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                ("\\paragraph{%s}"     . "\\paragraph*{%s}")
+                ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
  #+end_src
 
 **** PresSemin (ENG)
@@ -1412,15 +1376,14 @@ cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
      A classical beamer class to present into seminaries and workshops.
 
 #+name: ClPlanCours
-#+begin_src emacs-lisp  :results silent
+#+begin_src emacs-lisp :results silent
 (add-to-list 'org-latex-classes
 	     '("PresSemin"
-               "\\documentclass[serif, 14pt, aspectratio=169]{beamer}
+               "\\documentclass[13pt, aspectratio=169]{beamer}
                   [NO-PACKAGES]
                   \\setbeamercolor{alerted text}{fg= beamer@blendedblue!50}
-                  \\usepackage[T1]{fontenc}
                   \\usepackage[style=nejm, url=false, backend=bibtex]{biblatex} 
-                  \\usepackage{ctable, graphics, epsfig, hyperref, color, url, concmath, amssymb}
+                  \\usepackage{graphics, epsfig, hyperref, color, url, concmath, amssymb}
                   \\setbeamertemplate{navigation symbols}{} \\definecolor{violet}{rgb}{0.25,0,0.75}
                   \\AtBeginSection[]{
                   \\begin{frame}<beamer>
@@ -1477,6 +1440,8 @@ cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
                   ("\\paragraph{%s}"     . "\\paragraph*{%s}")
                   ("\\subparagraph{%s}"  . "\\subparagraph*{%s}")))
 #+end_src
+
+
 
 **** PresSemin (FR)
 
@@ -1572,6 +1537,28 @@ cyber-punk theme (melpa) / org (org) / magit (melpa) / pager
                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                     ("\\paragraph{%s}"     . "\\paragraph{%s}")))
  #+end_src
+
+**** RapRefere
+
+    The class to make referee reports, not well used because often
+    =.pdf= is not a good format.
+
+#+name: RapRefere
+#+begin_src emacs-lisp :results silent
+    (add-to-list 'org-latex-classes
+                 '("RapRefere"
+                   "\\documentclass[12pt]{article}
+                   [NO-DEFAULT-PACKAGES]
+                   [PACKAGES]
+                   [EXTRA]
+  \\usepackage[colorlinks, pdfstartview= FitH, urlcolor= blue, citecolor= black]{hyperref}
+                   \\parindent 20pt \\parskip 1ex
+                   \\usepackage{mathptmx, txfonts, natbib, etoolbox}
+  \\AtBeginEnvironment{quote}{\\small}   \\AtEndEnvironment{quote}{}"
+                   ("\\subsection*{%s}"      . "\\subsection*{%s}")
+                   ("\\subsubsection*{\\emph{%s}}"   . "\\subsubsection*{%s}")
+                   ("\\paragraph{%s}"        . "\\paragraph{%s}")))
+#+end_src
 
 **** StandAlon
 
@@ -1696,7 +1683,7 @@ sudo make install
 
 ** Finding Mu
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp  :tangle no
 (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
 (require 'mu4e)
 #+end_src
@@ -1716,7 +1703,7 @@ sudo make install
 
    Delete sent message, they will be picked on gmail.
 
-#+begin_src emacs-lisp 
+#+begin_src emacs-lisp  :tangle no
 (setq mu4e-sent-messages-behavior 'delete)
 #+end_src
 
@@ -1725,7 +1712,7 @@ sudo make install
    http://irfu.cea.fr/Pisp/vianney.lebouteiller/emacs_mail.html
    http://cachestocaches.com/2017/3/complete-guide-email-emacs-using-mu-and-/
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp  :tangle no
 (setq mail-user-agent 'mu4e-user-agent
       mu4e-get-mail-command "offlineimap"
       mu4e-update-interval 300
@@ -1779,7 +1766,7 @@ sudo make install
 
     Default configuration: without context
 
-#+begin_src emacs-lisp 
+#+begin_src emacs-lisp  :tangle no
 (setq mu4e-compose-dont-reply-to-self t)
 (add-hook 'mu4e-compose-mode-hook
         (defun my-do-compose-stuff ()
@@ -1804,7 +1791,7 @@ sudo make install
     2 different methods to filter the message, for the moment I do not
     see any difference.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp  :tangle no
 (setq mu4e-contexts
     `( ,(make-mu4e-context
           :name "Gmail"
@@ -1845,7 +1832,7 @@ sudo make install
    Normally it is C-c C-a in the message buffer, now your have also
    C-c RET C-a from dired, inspired from GNUS.
 
-#+begin_src emacs-lisp 
+#+begin_src emacs-lisp  :tangle no
 (require 'gnus-dired)
 (defun gnus-dired-mail-buffers ()
   "Return a list of active message buffers."
@@ -1864,7 +1851,7 @@ sudo make install
 
 ** Archive
 
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp :tangle no  :tangle no
 (defun my-mu4e-refile-folder-function (msg)
   "Set the refile folder for MSG."
   (let ((maildir (mu4e-message-field msg :maildir))
@@ -1892,7 +1879,7 @@ sudo make install
 
 ** Interaction with org
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (require 'org-mu4e)
 (setq org-mu4e-link-query-in-headers-mode nil)
 #+end_src
